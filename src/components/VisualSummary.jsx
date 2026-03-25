@@ -3,66 +3,70 @@ import { toPng } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 import { generateVisualSummary } from '../utils/claude'
 
+// Bilingual date: Arabic Hijri + English Gregorian
 function formatArabicDate() {
-  return new Date().toLocaleDateString('ar-SA', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  })
+  const now = new Date()
+  const ar = now.toLocaleDateString('ar-SA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+  const en = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return `${ar}  •  ${en}`
 }
 
-// Dark-mode color palette (hardcoded hex for html-to-image compatibility)
+// Ministry of Health light/white palette (main card)
 const D = {
-  bg:       '#0f172a',
-  bg2:      '#1e293b',
-  bg3:      '#0d1624',
-  border:   'rgba(148,163,184,0.15)',
-  text:     '#f1f5f9',
-  text2:    '#94a3b8',
-  text3:    '#475569',
-  green:    '#10b981', greenBg:  'rgba(16,185,129,0.1)',
-  red:      '#ef4444', redBg:    'rgba(239,68,68,0.1)',
-  blue:     '#3b82f6', blueBg:   'rgba(59,130,246,0.1)',
-  yellow:   '#f59e0b', yellowBg: 'rgba(245,158,11,0.1)',
-  gray:     '#94a3b8', grayBg:   'rgba(148,163,184,0.08)',
-  purple:   '#a78bfa', purpleBg: 'rgba(167,139,250,0.1)',
+  bg:       '#FFFFFF',
+  bg2:      '#F4F9F5',
+  bg3:      '#E8F4EB',
+  border:   '#C5DFC9',
+  text:     '#1A2A1C',
+  text2:    '#3D6045',
+  text3:    '#7A9E81',
+  green:    '#006C35', greenBg:  '#E6F4EA',
+  red:      '#B91C1C', redBg:    '#FEF2F2',
+  blue:     '#1565C0', blueBg:   '#E8F1FB',
+  yellow:   '#B45309', yellowBg: '#FFF8E1',
+  gray:     '#546E7A', grayBg:   '#F4F6F8',
+  purple:   '#6D28D9', purpleBg: '#F3F0FF',
 }
 
 const KPI_PALETTE = {
-  green:  { color: D.green,  bg: D.greenBg,  glow: 'rgba(16,185,129,0.18)'  },
-  red:    { color: D.red,    bg: D.redBg,    glow: 'rgba(239,68,68,0.18)'   },
-  blue:   { color: D.blue,   bg: D.blueBg,   glow: 'rgba(59,130,246,0.18)'  },
-  gray:   { color: D.gray,   bg: D.grayBg,   glow: 'rgba(148,163,184,0.12)' },
-  yellow: { color: D.yellow, bg: D.yellowBg, glow: 'rgba(245,158,11,0.18)'  },
+  green:  { color: '#006C35', bg: '#E6F4EA', glow: 'rgba(0,108,53,0.10)'   },
+  red:    { color: '#B91C1C', bg: '#FEF2F2', glow: 'rgba(185,28,28,0.10)'  },
+  blue:   { color: '#1565C0', bg: '#E8F1FB', glow: 'rgba(21,101,192,0.10)' },
+  gray:   { color: '#546E7A', bg: '#F4F6F8', glow: 'rgba(84,110,122,0.08)' },
+  yellow: { color: '#B45309', bg: '#FFF8E1', glow: 'rgba(180,83,9,0.10)'   },
 }
 
 const MATRIX_CFG = [
-  { key: 'urgentImportant',    label: 'عاجل ومهم',      icon: '🔴', color: D.red,    bg: D.redBg    },
-  { key: 'importantNotUrgent', label: 'مهم وغير عاجل',  icon: '📌', color: D.blue,   bg: D.blueBg   },
-  { key: 'urgentNotImportant', label: 'عاجل وغير مهم',  icon: '⚡', color: D.yellow, bg: D.yellowBg },
-  { key: 'other',              label: 'أخرى',            icon: '📋', color: D.gray,   bg: D.grayBg   },
+  { key: 'urgentImportant',    label: 'عاجل ومهم',      icon: '🔴', color: '#B91C1C', bg: '#FEF2F2' },
+  { key: 'importantNotUrgent', label: 'مهم وغير عاجل',  icon: '📌', color: '#1565C0', bg: '#E8F1FB' },
+  { key: 'urgentNotImportant', label: 'عاجل وغير مهم',  icon: '⚡', color: '#B45309', bg: '#FFF8E1' },
+  { key: 'other',              label: 'أخرى',            icon: '📋', color: '#546E7A', bg: '#F4F6F8' },
 ]
 
 const CARD = {
-  background: '#1e293b',
-  borderRadius: 14,
-  border: 'rgba(148,163,184,0.15)',
+  background: '#FFFFFF',
+  borderRadius: 12,
+  border: '#C5DFC9',
   padding: '14px 16px',
 }
 
-// Ministry of Health / Saudi government color palette
+// Ministry palette for PDF slides (white/green)
 const MN = {
-  bg:    '#0D1B2A',
-  bg2:   '#152236',
-  bg3:   '#1B3558',
+  bg:    '#FFFFFF',
+  bg2:   '#F4F9F5',
+  bg3:   '#E8F4EB',
   gold:  '#C9A84C',
   goldL: '#E8C97A',
   green: '#006C35',
   green2:'#00A651',
   white: '#FFFFFF',
-  off:   '#CBD8E8',
-  gray:  '#6B8CAE',
-  red:   '#C0392B',
-  red2:  '#EF4444',
-  border: 'rgba(201,168,76,0.25)',
+  off:   '#2D4A35',
+  gray:  '#6B8C75',
+  red:   '#B91C1C',
+  red2:  '#DC2626',
+  border: '#C5DFC9',
+  text:  '#1A2A1C',
+  text2: '#3D6045',
 }
 
 export default function VisualSummary({ tasks, apiKey }) {
@@ -246,7 +250,8 @@ export default function VisualSummary({ tasks, apiKey }) {
             fontFamily: "'IBM Plex Sans Arabic', 'Segoe UI', system-ui, sans-serif",
             direction: 'rtl',
             overflow: 'hidden',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+            boxShadow: '0 4px 24px rgba(0,108,53,0.14)',
+            border: `1px solid ${D.border}`,
           }}>
 
             {/* ── HEADER ── */}
