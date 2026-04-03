@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive PMO Coach — AI Edition</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{font-family:'Cairo',sans-serif;box-sizing:border-box;}
+body{background:#060d1a;color:#f1f5f9;margin:0;padding:0;}
+:root{
+  --navy-950:#060d1a;--navy-900:#0f172a;--navy-800:#1a2540;--navy-700:#1e293b;--navy-500:#334155;
+  --gold:#f59e0b;--gold-light:#fbbf24;--emerald:#10b981;--emerald-light:#34d399;
+  --slate:#94a3b8;--text:#f1f5f9;--text2:#94a3b8;--text3:#cbd5e1;
+  --gemini:#4f8ef7;--gemini-dark:#1a3a6b;
+}
+.screen{display:none;animation:fadeIn 0.3s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.modal-anim{animation:slideUp 0.35s ease;}
+.card-hover{transition:border-color 0.2s,transform 0.2s;}
+.card-hover:hover{border-color:var(--gold)!important;transform:translateY(-2px);}
+.progress-bar-inner{transition:width 0.6s cubic-bezier(0.4,0,0.2,1);}
+.nav-item{transition:color 0.2s;}
+.nav-item.active{color:var(--gold);}
+.flip-card{perspective:800px;}
+.flip-card-inner{transition:transform 0.55s cubic-bezier(0.4,0,0.2,1);transform-style:preserve-3d;position:relative;}
+.flip-card.flipped .flip-card-inner{transform:rotateY(180deg);}
+.flip-card-front,.flip-card-back{backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.flip-card-back{transform:rotateY(180deg);position:absolute;top:0;left:0;width:100%;}
+textarea{resize:vertical;outline:none;transition:border-color 0.2s;}
+textarea:focus{border-color:var(--gold)!important;}
+input[type=text],input[type=password]{outline:none;transition:border-color 0.2s;}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--gold)!important;}
+.btn-primary{background:var(--gold);color:#0f172a;font-weight:700;border:none;cursor:pointer;transition:opacity 0.2s,transform 0.15s;border-radius:10px;padding:10px 20px;font-size:14px;font-family:'Cairo',sans-serif;}
+.btn-primary:hover{opacity:0.88;}
+.btn-primary:active{transform:scale(0.97);}
+.btn-outline{background:transparent;border:1px solid var(--navy-500);color:var(--slate);cursor:pointer;transition:background 0.2s;border-radius:10px;padding:10px 20px;font-size:14px;font-family:'Cairo',sans-serif;}
+.btn-outline:hover{background:var(--navy-700);}
+.btn-danger{background:#ef4444;color:white;border:none;cursor:pointer;border-radius:8px;padding:8px 16px;font-size:13px;font-family:'Cairo',sans-serif;transition:opacity 0.2s;}
+.btn-danger:hover{opacity:0.85;}
+.btn-gemini{background:linear-gradient(135deg,#4f8ef7,#7c3aed);color:white;border:none;cursor:pointer;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;transition:opacity 0.2s,transform 0.15s;display:flex;align-items:center;gap:6px;}
+.btn-gemini:hover{opacity:0.9;}
+.btn-gemini:active{transform:scale(0.97);}
+.btn-gemini:disabled{opacity:0.5;cursor:not-allowed;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+.modal-box{background:#1a2540;border:1px solid #334155;border-radius:20px;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
+.tip-box{border:1px solid rgba(245,158,11,0.2);background:rgba(245,158,11,0.05);border-radius:12px;}
+.gemini-box{border:1px solid rgba(79,142,247,0.3);background:rgba(79,142,247,0.05);border-radius:14px;}
+.chat-bubble-ai{background:#1a2540;border:1px solid #253352;border-radius:14px 14px 14px 4px;padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.7;color:var(--text3);}
+.chat-bubble-user{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.2);border-radius:14px 14px 4px 14px;padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.7;color:var(--text);text-align:right;}
+.typing-dots span{display:inline-block;width:6px;height:6px;background:var(--gemini);border-radius:50%;margin:0 2px;animation:pulse 1.2s ease-in-out infinite;}
+.typing-dots span:nth-child(2){animation-delay:0.2s;}
+.typing-dots span:nth-child(3){animation-delay:0.4s;}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;}
+.settings-row{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.story-item{cursor:pointer;transition:border-color 0.2s,transform 0.15s;}
+.story-item:hover{border-color:var(--gold)!important;transform:translateX(-3px);}
+.story-item.done{border-color:var(--emerald)!important;}
+.fc-card{cursor:pointer;transition:border-color 0.2s,transform 0.15s;min-height:130px;}
+.fc-card:hover{border-color:var(--gold)!important;}
+.fc-card.mastered{border-color:var(--emerald)!important;}
+.checklist-item{cursor:pointer;transition:border-color 0.2s,background 0.2s;}
+.checklist-item:hover{border-color:var(--gold)!important;background:rgba(245,158,11,0.05);}
+.checklist-item.checked{border-color:var(--emerald)!important;}
+.gemini-badge{background:linear-gradient(135deg,rgba(79,142,247,0.2),rgba(124,58,237,0.2));border:1px solid rgba(79,142,247,0.3);border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;color:#93c5fd;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:4px;}
+.hero-glow{background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,0.08) 0%,transparent 70%);}
+</style>
+</head>
+<body>
+
+<div id="app" style="max-width:480px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:72px;">
+
+  <!-- ══════════ SCREEN: DASHBOARD ══════════ -->
+
+  <div id="screen-dashboard" class="screen active">
+    <div class="hero-glow" style="padding:24px 20px 20px;">
+      <p style="font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:700;margin-bottom:6px;">EXECUTIVE PMO COACH</p>
+      <h1 style="font-size:22px;font-weight:900;color:var(--text);margin-bottom:4px;line-height:1.3;">مرحباً، مدير المشاريع 👋</h1>
+      <p style="font-size:13px;color:var(--slate);margin-bottom:16px;">خطتك المكثفة للمقابلات التنفيذية رفيعة المستوى</p>
+
+```
+  <!-- API KEY STATUS -->
+  <div id="api-status-banner" style="margin-bottom:16px;"></div>
+
+  <div class="tip-box" style="padding:12px 14px;margin-bottom:20px;">
+    <p style="font-size:12px;color:#fbbf24;line-height:1.7;">💡 يتم حفظ تقدمك تلقائياً — أغلق المتصفح وعد لاحقاً، ستجد كل شيء محفوظاً.</p>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <span style="font-size:13px;font-weight:600;color:var(--text);">التقدم العام للخطة</span>
+    <span id="total-pct" style="font-size:14px;font-weight:900;color:var(--gold);">0%</span>
+  </div>
+  <div style="background:#334155;border-radius:8px;height:10px;overflow:hidden;margin-bottom:6px;">
+    <div id="total-bar" class="progress-bar-inner" style="height:100%;border-radius:8px;background:linear-gradient(90deg,#f59e0b,#10b981);width:0%"></div>
+  </div>
+  <p id="total-label" style="font-size:11px;color:var(--slate);text-align:left;margin-bottom:24px;">0 من 25 مهمة مكتملة</p>
+</div>
+<div id="phase-cards" style="padding:0 16px 8px;"></div>
+```
+
+  </div>
+
+  <!-- ══════════ SCREEN: PHASE 1 ══════════ -->
+
+  <div id="screen-phase1" class="screen">
+    <div style="padding:20px 20px 16px;">
+      <button onclick="showScreen('dashboard')" style="background:none;border:none;color:var(--slate);font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;font-family:'Cairo',sans-serif;">← العودة للرئيسية</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+        <div style="width:40px;height:40px;background:rgba(245,158,11,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">⭐</div>
+        <div>
+          <p style="font-size:10px;letter-spacing:2px;color:var(--gold);font-weight:700;margin:0 0 2px;">المرحلة الأولى</p>
+          <h2 style="font-size:17px;font-weight:800;color:var(--text);margin:0;">العمق الفني — قصص STAR</h2>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--slate);margin-bottom:18px;">أنشئ قصصك المهنية الخمس بمنهجية STAR — جيمناي سيحللها ويقترح تحسينات.</p>
+      <div id="star-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: PHASE 2 ══════════ -->
+
+  <div id="screen-phase2" class="screen">
+    <div style="padding:20px 20px 16px;">
+      <button onclick="showScreen('dashboard')" style="background:none;border:none;color:var(--slate);font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;font-family:'Cairo',sans-serif;">← العودة للرئيسية</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+        <div style="width:40px;height:40px;background:rgba(99,102,241,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">🃏</div>
+        <div>
+          <p style="font-size:10px;letter-spacing:2px;color:#818cf8;font-weight:700;margin:0 0 2px;">المرحلة الثانية</p>
+          <h2 style="font-size:17px;font-weight:800;color:var(--text);margin:0;">الكي الفني — المصطلحات</h2>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--slate);margin-bottom:18px;">اضغط على البطاقة لتقليبها — ثم أكّد إتقانك للمصطلح.</p>
+      <div id="fc-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: PHASE 3 ══════════ -->
+
+  <div id="screen-phase3" class="screen">
+    <div style="padding:20px 20px 16px;">
+      <button onclick="showScreen('dashboard')" style="background:none;border:none;color:var(--slate);font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;font-family:'Cairo',sans-serif;">← العودة للرئيسية</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+        <div style="width:40px;height:40px;background:rgba(16,185,129,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;">✅</div>
+        <div>
+          <p style="font-size:10px;letter-spacing:2px;color:var(--emerald);font-weight:700;margin:0 0 2px;">المرحلة الثالثة</p>
+          <h2 style="font-size:17px;font-weight:800;color:var(--text);margin:0;">هندسة الحوار — المقابلة</h2>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--slate);margin-bottom:18px;">قائمة التحقق الكاملة — اضغط على كل بند للتأشير عليه.</p>
+      <div id="checklist"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: AI COACH ══════════ -->
+
+  <div id="screen-ai" class="screen">
+    <div style="padding:20px 20px 16px;">
+      <button onclick="showScreen('dashboard')" style="background:none;border:none;color:var(--slate);font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;font-family:'Cairo',sans-serif;">← العودة للرئيسية</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+        <div style="width:40px;height:40px;background:rgba(79,142,247,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🤖</div>
+        <div>
+          <p style="font-size:10px;letter-spacing:2px;color:#93c5fd;font-weight:700;margin:0 0 2px;">مدرّب الذكاء الاصطناعي</p>
+          <h2 style="font-size:17px;font-weight:800;color:var(--text);margin:0;">جيمناي — مدربك الشخصي</h2>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--slate);margin-bottom:16px;">يقرأ بياناتك مباشرة ويحللها — اختر ما تريد:</p>
+
+```
+  <!-- MODE TABS -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;">
+    <button id="tab-analyze" onclick="setAiMode('analyze')" style="flex:1;padding:10px 8px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:all 0.2s;background:rgba(79,142,247,0.2);border:1px solid rgba(79,142,247,0.4);color:#93c5fd;">
+      🔍 تحليل قصصي
+    </button>
+    <button id="tab-interview" onclick="setAiMode('interview')" style="flex:1;padding:10px 8px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;transition:all 0.2s;background:transparent;border:1px solid #334155;color:var(--slate);">
+      🎤 مقابلة تجريبية
+    </button>
+  </div>
+
+  <!-- ANALYZE MODE -->
+  <div id="mode-analyze">
+    <div class="gemini-box" style="padding:14px;margin-bottom:16px;">
+      <p style="font-size:12px;color:#93c5fd;line-height:1.7;margin:0;">✨ جيمناي سيقرأ قصصك المكتملة ويعطيك تقييماً مفصلاً مع اقتراحات تحسين لكل قصة.</p>
+    </div>
+    <button class="btn-gemini" onclick="analyzeStories()" style="width:100%;justify-content:center;padding:13px;" id="btn-analyze">
+      <span>✨</span> حلّل قصصي الآن
+    </button>
+    <div id="analysis-result" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- INTERVIEW MODE -->
+  <div id="mode-interview" style="display:none;">
+    <div class="gemini-box" style="padding:14px;margin-bottom:16px;">
+      <p style="font-size:12px;color:#93c5fd;line-height:1.7;margin:0;">🎤 جيمناي سيسألك أسئلة مقابلة تنفيذية حقيقية ويقيّم إجاباتك بناءً على خلفيتك.</p>
+    </div>
+    <div id="interview-chat" style="margin-bottom:12px;min-height:60px;"></div>
+    <div id="interview-input-area" style="display:none;">
+      <textarea id="interview-answer" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:10px;color:var(--text);padding:10px 12px;font-size:13px;font-family:'Cairo',sans-serif;min-height:80px;direction:rtl;" placeholder="اكتب إجابتك هنا..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-gemini" onclick="sendInterviewAnswer()" style="flex:1;justify-content:center;" id="btn-send-answer">
+          <span>إرسال الإجابة</span>
+        </button>
+        <button class="btn-outline" onclick="endInterview()" style="font-size:12px;padding:10px 14px;">إنهاء</button>
+      </div>
+    </div>
+    <button class="btn-gemini" onclick="startInterview()" style="width:100%;justify-content:center;padding:13px;" id="btn-start-interview">
+      <span>🎤</span> ابدأ المقابلة التجريبية
+    </button>
+  </div>
+</div>
+```
+
+  </div>
+
+  <!-- ══════════ SCREEN: SETTINGS ══════════ -->
+
+  <div id="screen-settings" class="screen">
+    <div style="padding:20px 20px 16px;">
+      <button onclick="showScreen('dashboard')" style="background:none;border:none;color:var(--slate);font-size:13px;cursor:pointer;padding:0;margin-bottom:16px;font-family:'Cairo',sans-serif;">← العودة للرئيسية</button>
+      <h2 style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:4px;">الإعدادات</h2>
+      <p style="font-size:12px;color:var(--slate);margin-bottom:20px;">إدارة مفتاح الذكاء الاصطناعي وبيانات التطبيق</p>
+
+```
+  <!-- API KEY SECTION -->
+  <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span style="font-size:18px;">🔑</span>
+      <div>
+        <p style="font-size:14px;font-weight:700;color:var(--text);margin:0;">Gemini API Key</p>
+        <p style="font-size:11px;color:var(--slate);margin:0;">مطلوب لتفعيل ميزات الذكاء الاصطناعي</p>
+      </div>
+    </div>
+    <input type="password" id="api-key-input" placeholder="أدخل مفتاحك هنا: AIzaSy..."
+      style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:10px;color:var(--text);padding:10px 12px;font-size:13px;font-family:'Cairo',sans-serif;direction:ltr;text-align:left;margin-bottom:10px;">
+    <div style="display:flex;gap:8px;">
+      <button class="btn-primary" onclick="saveApiKey()" style="flex:1;padding:10px;">حفظ المفتاح</button>
+      <button class="btn-outline" onclick="clearApiKey()" style="padding:10px 14px;font-size:12px;">مسح</button>
+    </div>
+    <p id="api-key-status" style="font-size:11px;margin-top:8px;text-align:center;"></p>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;">
+      <p style="font-size:11px;color:var(--slate);line-height:1.6;margin:0;">
+        🌐 للحصول على المفتاح مجاناً: <span style="color:#93c5fd;direction:ltr;display:inline-block;">aistudio.google.com</span><br>
+        🔒 المفتاح محفوظ على جهازك فقط — لا يُرسل لأي خادم خارجي.
+      </p>
+    </div>
+  </div>
+
+  <div class="settings-row">
+    <div>
+      <p style="font-size:14px;font-weight:600;color:var(--text);margin:0 0 3px;">إعادة ضبط التقدم</p>
+      <p style="font-size:11px;color:var(--slate);margin:0;">مسح جميع البيانات والبدء من الصفر</p>
+    </div>
+    <button class="btn-danger" onclick="resetAll()">إعادة الضبط</button>
+  </div>
+
+  <div class="settings-row">
+    <div>
+      <p style="font-size:14px;font-weight:600;color:var(--text);margin:0 0 3px;">إصدار التطبيق</p>
+      <p style="font-size:11px;color:var(--slate);margin:0;">Executive PMO Coach — AI Edition v2.0</p>
+    </div>
+    <span style="background:rgba(79,142,247,0.15);color:#93c5fd;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;">AI</span>
+  </div>
+</div>
+```
+
+  </div>
+
+</div><!-- end #app -->
+
+<!-- BOTTOM NAV -->
+
+<div style="position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #1e293b;display:flex;z-index:40;max-width:480px;margin:0 auto;">
+  <button class="nav-item active" id="nav-dashboard" onclick="showScreen('dashboard')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--slate);font-size:10px;font-family:'Cairo',sans-serif;padding:8px 4px 6px;cursor:pointer;">
+    <span style="font-size:18px;">🏠</span>الرئيسية
+  </button>
+  <button class="nav-item" id="nav-phase1" onclick="showScreen('phase1')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--slate);font-size:10px;font-family:'Cairo',sans-serif;padding:8px 4px 6px;cursor:pointer;">
+    <span style="font-size:18px;">⭐</span>STAR
+  </button>
+  <button class="nav-item" id="nav-phase2" onclick="showScreen('phase2')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--slate);font-size:10px;font-family:'Cairo',sans-serif;padding:8px 4px 6px;cursor:pointer;">
+    <span style="font-size:18px;">🃏</span>مصطلحات
+  </button>
+  <button class="nav-item" id="nav-phase3" onclick="showScreen('phase3')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--slate);font-size:10px;font-family:'Cairo',sans-serif;padding:8px 4px 6px;cursor:pointer;">
+    <span style="font-size:18px;">✅</span>مقابلة
+  </button>
+  <button class="nav-item" id="nav-ai" onclick="showScreen('ai')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--slate);font-size:10px;font-family:'Cairo',sans-serif;padding:8px 4px 6px;cursor:pointer;">
+    <span style="font-size:18px;">🤖</span>جيمناي
+  </button>
+  <button class="nav-item" id="nav-settings" onclick="showScreen('settings')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--slate);font-size:10px;font-family:'Cairo',sans-serif;padding:8px 4px 6px;cursor:pointer;">
+    <span style="font-size:18px;">⚙️</span>إعدادات
+  </button>
+</div>
+
+<!-- MODAL -->
+
+<div id="modal" class="modal-overlay" style="display:none;" onclick="handleModalBgClick(event)">
+  <div class="modal-box modal-anim" id="modal-content"></div>
+</div>
+
+<script>
+// ══════════════════ DATA ══════════════════
+const STARS=[
+  {id:'s1',icon:'🚨',title:'إنقاذ مشروع متعثر',desc:'موقف أنقذت فيه مشروعاً على وشك الفشل'},
+  {id:'s2',icon:'💰',title:'تحقيق وفورات مالية',desc:'قلّصت التكاليف أو حققت وفورات بالأرقام'},
+  {id:'s3',icon:'🧭',title:'قيادة تغيير استراتيجي',desc:'قدت تحولاً تنظيمياً أو استراتيجياً'},
+  {id:'s4',icon:'🤝',title:'إدارة أزمة مع أصحاب المصلحة',desc:'تعاملت مع توقعات متعارضة أو أزمة علاقات'},
+  {id:'s5',icon:'🏆',title:'تسليم مشروع معقد في الوقت المحدد',desc:'أنجزت مشروعاً بالغ التعقيد ضمن كامل القيود'},
+];
+const TERMS=[
+  {id:'t1',term:'Scope Creep',def:'الزيادة غير المنضبطة في نطاق المشروع خارج الاتفاق الأولي.',example:'مثال: إضافة ميزات جديدة للنظام دون تحديث الجدول أو الميزانية.'},
+  {id:'t2',term:'Resource Leveling',def:'تقنية لتوزيع الموارد بشكل متوازن لتجنب الإفراط في التخصيص.',example:'مثال: إعادة جدولة المهام لمنع إرهاق فريق واحد.'},
+  {id:'t3',term:'Change Control Board',def:'لجنة رسمية تراجع وتوافق على تغييرات المشروع قبل تطبيقها.',example:'مثال: مراجعة طلب تغيير المتطلبات بعد بدء التنفيذ.'},
+  {id:'t4',term:'Risk Mitigation',def:'خطط واستراتيجيات استباقية لتخفيف احتمالية أو أثر المخاطر.',example:'مثال: التعاقد مع موردَين بديلَين لتفادي انقطاع سلسلة التوريد.'},
+  {id:'t5',term:'Earned Value Management',def:'منهجية لقياس أداء المشروع بمقارنة العمل المنجز بالتكلفة الفعلية.',example:'مثال: CPI=0.85 تعني إنجاز 85 سنتاً مقابل كل دولار يُنفق.'},
+  {id:'t6',term:'Agile vs Waterfall',def:'Agile: تسليمات تدريجية ومرونة عالية. Waterfall: تسلسل خطي وتخطيط مسبق.',example:'مثال: المنتجات الرقمية تناسب Agile، بينما البنية التحتية تناسب Waterfall.'},
+  {id:'t7',term:'Stakeholder Engagement',def:'عملية منهجية لتحديد وإدارة توقعات وتواصل أصحاب المصلحة.',example:'مثال: اجتماعات دورية مع الجهات الراعية لضمان التوافق.'},
+  {id:'t8',term:'Quality Assurance',def:'عمليات منهجية للتحقق من أن مخرجات المشروع تلبي معايير الجودة.',example:'مثال: مراجعات الكود وتقارير الاختبار الشامل قبل الإطلاق.'},
+  {id:'t9',term:'CPI / SPI',def:'CPI: مؤشر كفاءة التكلفة. SPI: مؤشر كفاءة الجدول الزمني. >1 يعني أداء أفضل من الخطة.',example:'مثال: SPI=1.1 تعني أن المشروع أسرع من الجدول المخطط.'},
+  {id:'t10',term:'PMO Governance',def:'إطار السياسات والمعايير والعمليات التي يُرسيها مكتب إدارة المشاريع.',example:'مثال: نماذج موحدة للتقارير وآليات واضحة لتصعيد القرارات.'},
+];
+const CHECKS=[
+  {id:'c1',label:'تحديث السيرة الذاتية قبل 24 ساعة',sub:'راجع الإنجازات الأخيرة وأضف أرقاماً قابلة للقياس'},
+  {id:'c2',label:'تطبيق قاعدة "الثواني الثلاث"',sub:'توقف 3 ثوانٍ قبل الإجابة على أي سؤال'},
+  {id:'c3',label:'التخلص من الكلمات الحشوية',sub:'تدرّب على إزالة: Yeah / So / Uhm / يعني من حديثك'},
+  {id:'c4',label:'تجهيز 3 أسئلة ذكية للمحاور',sub:'أسئلة استراتيجية تُظهر فهمك العميق للمؤسسة'},
+  {id:'c5',label:'استخدام لغة الأرقام في الإجابات',sub:'كل إنجاز يُرفق برقم: وفّرنا 30%، أنجزنا في 6 أشهر...'},
+  {id:'c6',label:'البحث عن المحاور على LinkedIn',sub:'افهم خلفيته واهتماماته لتوليد حوار أعمق'},
+  {id:'c7',label:'ارتداء الزي المهني المناسب',sub:'الانطباع الأول يتشكّل في أقل من 7 ثوانٍ'},
+  {id:'c8',label:'الوصول قبل الموعد بـ 15 دقيقة',sub:'وقت للتكيف مع البيئة والاسترخاء'},
+  {id:'c9',label:'إحضار نسخ مطبوعة من السيرة الذاتية',sub:'3 نسخ على الأقل — تدل على الاستعداد'},
+  {id:'c10',label:'إنهاء المقابلة بخطوة تالية واضحة',sub:'اسأل عن التوقيت المتوقع للقرار وأبدِ حماسك'},
+];
+
+// ══════════════════ STATE ══════════════════
+let state={};
+const STORAGE_KEY='pmo_coach_v2';
+let interviewHistory=[];
+let currentAiMode='analyze';
+let interviewActive=false;
+
+function loadState(){try{state=JSON.parse(localStorage.getItem(STORAGE_KEY))||{};}catch(e){state={};}}
+function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
+function getStarData(id){return state['star_'+id]||{situation:'',task:'',action:'',result:'',done:false};}
+function isTermMastered(id){return !!state['term_'+id];}
+function isChecked(id){return !!state['check_'+id];}
+function getApiKey(){return localStorage.getItem('pmo_gemini_key')||'';}
+
+function calcTotal(){
+  let done=0;
+  STARS.forEach(s=>{if(getStarData(s.id).done)done++;});
+  TERMS.forEach(t=>{if(isTermMastered(t.id))done++;});
+  CHECKS.forEach(c=>{if(isChecked(c.id))done++;});
+  return{done,total:25,pct:Math.round(done/25*100)};
+}
+function calcPhase(ids,type){
+  let done=0;
+  if(type==='star')ids.forEach(id=>{if(getStarData(id).done)done++;});
+  else if(type==='term')ids.forEach(id=>{if(isTermMastered(id))done++;});
+  else ids.forEach(id=>{if(isChecked(id))done++;});
+  return{done,total:ids.length,pct:Math.round(done/ids.length*100)};
+}
+
+// ══════════════════ API KEY ══════════════════
+function saveApiKey(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(!key){showApiStatus('أدخل المفتاح أولاً','red');return;}
+  if(!key.startsWith('AIza')){showApiStatus('المفتاح يبدو غير صحيح — يجب أن يبدأ بـ AIza','red');return;}
+  localStorage.setItem('pmo_gemini_key',key);
+  showApiStatus('✓ تم حفظ المفتاح بنجاح!','green');
+  renderApiStatusBanner();
+}
+function clearApiKey(){
+  localStorage.removeItem('pmo_gemini_key');
+  document.getElementById('api-key-input').value='';
+  showApiStatus('تم مسح المفتاح','slate');
+  renderApiStatusBanner();
+}
+function showApiStatus(msg,color){
+  const el=document.getElementById('api-key-status');
+  const colors={green:'#34d399',red:'#f87171',slate:'#94a3b8'};
+  el.style.color=colors[color]||'#94a3b8';
+  el.textContent=msg;
+}
+function renderApiStatusBanner(){
+  const key=getApiKey();
+  const banner=document.getElementById('api-status-banner');
+  if(!banner)return;
+  if(key){
+    banner.innerHTML=`<div style="background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.3);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:16px;">✅</span>
+      <p style="font-size:12px;color:#93c5fd;margin:0;">جيمناي متصل وجاهز للمساعدة</p>
+    </div>`;
+  } else {
+    banner.innerHTML=`<div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">⚠️</span>
+        <p style="font-size:12px;color:#fbbf24;margin:0;">أضف مفتاح Gemini لتفعيل الذكاء الاصطناعي</p>
+      </div>
+      <button onclick="showScreen('settings')" style="background:var(--gold);color:#0f172a;border:none;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;white-space:nowrap;">إضافة</button>
+    </div>`;
+  }
+}
+
+// ══════════════════ GEMINI API ══════════════════
+async function callGemini(prompt,systemInstruction=''){
+  const key=getApiKey();
+  if(!key)throw new Error('NO_KEY');
+  const messages=[];
+  if(systemInstruction) messages.push({role:'user',parts:[{text:systemInstruction}]},{role:'model',parts:[{text:'فهمت. سألتزم بهذه التعليمات.'}]});
+  messages.push({role:'user',parts:[{text:prompt}]});
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:messages,generationConfig:{temperature:0.7,maxOutputTokens:1500}})
+  });
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'خطأ في الاتصال');}
+  const data=await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text||'لم أتلقَّ رداً';
+}
+
+async function callGeminiChat(messages){
+  const key=getApiKey();
+  if(!key)throw new Error('NO_KEY');
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:messages,generationConfig:{temperature:0.8,maxOutputTokens:800}})
+  });
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'خطأ في الاتصال');}
+  const data=await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text||'لم أتلقَّ رداً';
+}
+
+// ══════════════════ AI: ANALYZE ══════════════════
+async function analyzeStories(){
+  if(!getApiKey()){showNoKeyAlert();return;}
+  const completed=STARS.filter(s=>getStarData(s.id).done);
+  if(completed.length===0){
+    document.getElementById('analysis-result').innerHTML=`<div class="gemini-box" style="padding:14px;"><p style="font-size:13px;color:#fbbf24;margin:0;">⚠️ أكمل قصة STAR واحدة على الأقل قبل التحليل.</p></div>`;
+    return;
+  }
+  const btn=document.getElementById('btn-analyze');
+  btn.disabled=true;
+  btn.innerHTML=`<div class="spinner"></div><span>جيمناي يقرأ قصصك...</span>`;
+  const storiesText=completed.map(s=>{
+    const d=getStarData(s.id);
+    return `## قصة: ${s.title}\n- الموقف: ${d.situation}\n- المهمة: ${d.task}\n- الإجراء: ${d.action}\n- النتيجة: ${d.result}`;
+  }).join('\n\n');
+  const prompt=`أنت خبير في تدريب المديرين التنفيذيين على المقابلات الوظيفية رفيعة المستوى. قم بتحليل قصص STAR التالية لمدير مكتب إدارة مشاريع (PMO) يتحضر لمقابلة تنفيذية:\n\n${storiesText}\n\nقدّم تحليلاً باللغة العربية يشمل:\n1. تقييم كل قصة (نقاط القوة والضعف)\n2. هل النتائج مدعومة بأرقام كافية؟\n3. 3 اقتراحات تحسين عملية لكل قصة\n4. تقييم عام من 10\n\nاستخدم نبرة مشجعة ومهنية.`;
+  try{
+    const result=await callGemini(prompt);
+    document.getElementById('analysis-result').innerHTML=`
+      <div style="background:#1a2540;border:1px solid rgba(79,142,247,0.3);border-radius:14px;padding:16px;margin-top:4px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #253352;">
+          <span style="font-size:18px;">🤖</span>
+          <span style="font-size:13px;font-weight:700;color:#93c5fd;">تحليل جيمناي</span>
+        </div>
+        <div style="font-size:13px;color:var(--text3);line-height:1.8;white-space:pre-wrap;direction:rtl;">${result}</div>
+      </div>`;
+  }catch(e){
+    showGeminiError(e,'analysis-result');
+  }
+  btn.disabled=false;
+  btn.innerHTML=`<span>✨</span> حلّل قصصي مجدداً`;
+}
+
+// ══════════════════ AI: INTERVIEW ══════════════════
+function setAiMode(mode){
+  currentAiMode=mode;
+  document.getElementById('mode-analyze').style.display=mode==='analyze'?'block':'none';
+  document.getElementById('mode-interview').style.display=mode==='interview'?'block':'none';
+  document.getElementById('tab-analyze').style.background=mode==='analyze'?'rgba(79,142,247,0.2)':'transparent';
+  document.getElementById('tab-analyze').style.borderColor=mode==='analyze'?'rgba(79,142,247,0.4)':'#334155';
+  document.getElementById('tab-analyze').style.color=mode==='analyze'?'#93c5fd':'var(--slate)';
+  document.getElementById('tab-interview').style.background=mode==='interview'?'rgba(79,142,247,0.2)':'transparent';
+  document.getElementById('tab-interview').style.borderColor=mode==='interview'?'rgba(79,142,247,0.4)':'#334155';
+  document.getElementById('tab-interview').style.color=mode==='interview'?'#93c5fd':'var(--slate)';
+}
+
+async function startInterview(){
+  if(!getApiKey()){showNoKeyAlert();return;}
+  interviewHistory=[];
+  interviewActive=true;
+  const btn=document.getElementById('btn-start-interview');
+  btn.style.display='none';
+  document.getElementById('interview-input-area').style.display='block';
+  document.getElementById('interview-chat').innerHTML='';
+  addChatBubble('ai','جاهز! سأجري معك مقابلة تنفيذية محاكية. سأطرح عليك أسئلة حقيقية وأقيّم إجاباتك.\n\nلنبدأ...');
+  const completedStories=STARS.filter(s=>getStarData(s.id).done).map(s=>s.title).join('، ');
+  const context=completedStories?`المرشح لديه قصص STAR في: ${completedStories}`:'المرشح لم يكمل قصص STAR بعد';
+  const systemMsg=`أنت محاور تنفيذي خبير يُجري مقابلة لمنصب رفيعة المستوى مع مدير PMO. ${context}. اطرح سؤالاً تنفيذياً واحداً فقط في كل مرة، باللغة العربية، وبعد الإجابة قيّمها وانتقل للسؤال التالي. كن صارماً ومهنياً.`;
+  const firstPrompt=`${systemMsg}\n\nابدأ بالسؤال الأول من المقابلة.`;
+  await sendToInterview(firstPrompt,true);
+}
+
+async function sendInterviewAnswer(){
+  const input=document.getElementById('interview-answer');
+  const answer=input.value.trim();
+  if(!answer)return;
+  input.value='';
+  addChatBubble('user',answer);
+  interviewHistory.push({role:'user',parts:[{text:answer}]});
+  const btn=document.getElementById('btn-send-answer');
+  btn.disabled=true;
+  btn.innerHTML=`<div class="spinner"></div>`;
+  addTypingIndicator();
+  try{
+    const messages=buildInterviewMessages(answer);
+    const response=await callGeminiChat(messages);
+    removeTypingIndicator();
+    addChatBubble('ai',response);
+    interviewHistory.push({role:'model',parts:[{text:response}]});
+  }catch(e){
+    removeTypingIndicator();
+    addChatBubble('ai','عذراً، حدث خطأ في الاتصال. حاول مرة أخرى.');
+  }
+  btn.disabled=false;
+  btn.innerHTML='<span>إرسال الإجابة</span>';
+}
+
+function buildInterviewMessages(latestAnswer){
+  const completedStories=STARS.filter(s=>getStarData(s.id).done).map(s=>s.title).join('، ');
+  const context=completedStories?`المرشح لديه قصص STAR في: ${completedStories}`:'';
+  const sys=`أنت محاور تنفيذي خبير يُجري مقابلة لمنصب PMO رفيع. ${context}. قيّم الإجابة الأخيرة وانتقل للسؤال التالي. اللغة عربية فقط.`;
+  const msgs=[{role:'user',parts:[{text:sys}]},{role:'model',parts:[{text:'فهمت.'}]}];
+  interviewHistory.forEach(m=>msgs.push(m));
+  return msgs;
+}
+
+async function sendToInterview(prompt,isFirst=false){
+  addTypingIndicator();
+  try{
+    const msgs=isFirst?[{role:'user',parts:[{text:prompt}]}]:buildInterviewMessages('');
+    const response=await callGeminiChat(isFirst?msgs:msgs);
+    removeTypingIndicator();
+    addChatBubble('ai',response);
+    if(isFirst)interviewHistory.push({role:'model',parts:[{text:response}]});
+  }catch(e){
+    removeTypingIndicator();
+    addChatBubble('ai','عذراً، حدث خطأ في الاتصال. تأكد من صحة مفتاح API.');
+  }
+}
+
+function addChatBubble(type,text){
+  const chat=document.getElementById('interview-chat');
+  const div=document.createElement('div');
+  div.className=type==='ai'?'chat-bubble-ai':'chat-bubble-user';
+  if(type==='ai'){
+    div.innerHTML=`<span style="font-size:14px;margin-left:6px;">🤖</span>${text.replace(/\n/g,'<br>')}`;
+  } else {
+    div.innerHTML=`${text.replace(/\n/g,'<br>')}<span style="font-size:14px;margin-right:6px;float:left;">👤</span>`;
+  }
+  chat.appendChild(div);
+  div.scrollIntoView({behavior:'smooth'});
+}
+
+function addTypingIndicator(){
+  const chat=document.getElementById('interview-chat');
+  const div=document.createElement('div');
+  div.id='typing-indicator';
+  div.className='chat-bubble-ai';
+  div.innerHTML=`<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  chat.appendChild(div);
+  div.scrollIntoView({behavior:'smooth'});
+}
+function removeTypingIndicator(){
+  const el=document.getElementById('typing-indicator');
+  if(el)el.remove();
+}
+
+function endInterview(){
+  interviewActive=false;
+  document.getElementById('btn-start-interview').style.display='flex';
+  document.getElementById('interview-input-area').style.display='none';
+  addChatBubble('ai','انتهت المقابلة التجريبية. أداؤك جيد! راجع الملاحظات أعلاه وطبّق التحسينات قبل المقابلة الحقيقية. 💪');
+}
+
+function showNoKeyAlert(){
+  document.getElementById('analysis-result').innerHTML='';
+  const target=currentAiMode==='interview'?'interview-chat':'analysis-result';
+  document.getElementById(target).innerHTML=`
+    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">🔑</span>
+      <div>
+        <p style="font-size:13px;font-weight:700;color:#f87171;margin:0 0 4px;">مفتاح Gemini مطلوب</p>
+        <p style="font-size:12px;color:var(--slate);margin:0 0 8px;">أضف مفتاحك في صفحة الإعدادات لتفعيل الذكاء الاصطناعي.</p>
+        <button onclick="showScreen('settings')" style="background:#ef4444;color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">الإعدادات</button>
+      </div>
+    </div>`;
+}
+
+function showGeminiError(e,targetId){
+  const msg=e.message==='NO_KEY'?'أضف مفتاح Gemini في الإعدادات':('خطأ: '+e.message);
+  document.getElementById(targetId).innerHTML=`<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px;"><p style="font-size:13px;color:#f87171;margin:0;">⚠️ ${msg}</p></div>`;
+}
+
+// ══════════════════ NAVIGATION ══════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{n.classList.remove('active');n.style.color='var(--slate)';});
+  const navMap={dashboard:'nav-dashboard',phase1:'nav-phase1',phase2:'nav-phase2',phase3:'nav-phase3',ai:'nav-ai',settings:'nav-settings'};
+  const navEl=document.getElementById(navMap[name]);
+  if(navEl){navEl.classList.add('active');navEl.style.color='var(--gold)';}
+  if(name==='dashboard')renderDashboard();
+  if(name==='phase1')renderPhase1();
+  if(name==='phase2')renderPhase2();
+  if(name==='phase3')renderPhase3();
+  if(name==='settings'){
+    const key=getApiKey();
+    if(key)document.getElementById('api-key-input').value=key;
+  }
+  window.scrollTo(0,0);
+}
+
+// ══════════════════ DASHBOARD ══════════════════
+function renderDashboard(){
+  const prog=calcTotal();
+  document.getElementById('total-pct').textContent=prog.pct+'%';
+  document.getElementById('total-bar').style.width=prog.pct+'%';
+  document.getElementById('total-label').textContent=prog.done+' من '+prog.total+' مهمة مكتملة';
+  renderApiStatusBanner();
+  const phases=[
+    {screen:'phase1',icon:'⭐',color:'#f59e0b',label:'المرحلة الأولى',sub:'قصص STAR الذهبية الخمس',type:'star',ids:STARS.map(s=>s.id)},
+    {screen:'phase2',icon:'🃏',color:'#818cf8',label:'المرحلة الثانية',sub:'10 مصطلحات أساسية',type:'term',ids:TERMS.map(t=>t.id)},
+    {screen:'phase3',icon:'✅',color:'#10b981',label:'المرحلة الثالثة',sub:'هندسة الحوار والمقابلة',type:'check',ids:CHECKS.map(c=>c.id)},
+    {screen:'ai',icon:'🤖',color:'#4f8ef7',label:'جيمناي AI',sub:'تحليل قصصك + مقابلة تجريبية',type:'ai',ids:[]},
+  ];
+  const pc=document.getElementById('phase-cards');
+  pc.innerHTML='';
+  phases.forEach(p=>{
+    const ph=p.type==='ai'?{done:0,total:0,pct:getApiKey()?100:0}:calcPhase(p.ids,p.type);
+    const done=ph.pct===100;
+    const isAi=p.type==='ai';
+    const card=document.createElement('div');
+    card.className='card-hover';
+    card.style.cssText=`background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;`;
+    card.onclick=()=>showScreen(p.screen);
+    card.innerHTML=`
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div style="width:44px;height:44px;background:${p.color}18;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">${p.icon}</div>
+        <div style="flex:1;">
+          <p style="font-size:10px;letter-spacing:2px;color:${p.color};font-weight:700;margin:0 0 2px;">${p.label.toUpperCase()}</p>
+          <p style="font-size:15px;font-weight:700;color:var(--text);margin:0;">${p.sub}</p>
+        </div>
+        ${isAi?'<span class="gemini-badge">AI</span>':''}
+      </div>
+      ${!isAi?`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:11px;color:var(--slate);">${ph.done} من ${ph.total} مكتملة</span>
+        <span style="font-size:12px;font-weight:800;color:${p.color};">${ph.pct}%</span>
+      </div>
+      <div style="background:#0f172a;border-radius:6px;height:7px;overflow:hidden;margin-bottom:14px;">
+        <div class="progress-bar-inner" style="height:100%;border-radius:6px;background:${p.color};width:${ph.pct}%;"></div>
+      </div>`:'<div style="margin-bottom:14px;"></div>'}
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700;${isAi?(getApiKey()?'background:rgba(79,142,247,0.15);color:#93c5fd;':'background:#334155;color:var(--slate);'):(done?'background:rgba(16,185,129,0.15);color:#34d399;':'background:#334155;color:var(--slate);')}">${isAi?(getApiKey()?'✓ متصل':'يحتاج مفتاح'):(done?'✓ مكتمل':'جارٍ التنفيذ')}</span>
+        <button onclick="event.stopPropagation();showScreen('${p.screen}')" style="background:${isAi?'linear-gradient(135deg,#4f8ef7,#7c3aed)':(done?'var(--emerald)':'var(--gold)')};color:white;padding:7px 16px;font-size:12px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-family:'Cairo',sans-serif;">${isAi?'فتح جيمناي':(done?'مراجعة':'ابدأ الآن')}</button>
+      </div>`;
+    pc.appendChild(card);
+  });
+}
+
+// ══════════════════ PHASE 1 ══════════════════
+function renderPhase1(){
+  const list=document.getElementById('star-list');
+  list.innerHTML='';
+  STARS.forEach(s=>{
+    const d=getStarData(s.id);
+    const el=document.createElement('div');
+    el.className='story-item'+(d.done?' done':'');
+    el.style.cssText=`background:#1e293b;border:1px solid #334155;border-radius:13px;padding:15px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;`;
+    el.onclick=()=>openStarModal(s.id);
+    el.innerHTML=`
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:22px;">${s.icon}</span>
+        <div>
+          <p style="font-size:14px;font-weight:700;color:var(--text);margin:0 0 2px;">${s.title}</p>
+          <p style="font-size:11px;color:var(--slate);margin:0;">${s.desc}</p>
+        </div>
+      </div>
+      ${d.done?'<span style="background:rgba(16,185,129,0.15);color:#34d399;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap;">✓ مكتمل</span>':'<span style="font-size:22px;color:var(--gold);">›</span>'}`;
+    list.appendChild(el);
+  });
+}
+
+function openStarModal(id){
+  const s=STARS.find(x=>x.id===id);
+  const d=getStarData(id);
+  const fields=[
+    {key:'situation',label:'الموقف (Situation)',placeholder:'صِف السياق والخلفية بالتفصيل...'},
+    {key:'task',label:'المهمة (Task)',placeholder:'ما الذي كنت مسؤولاً عنه بالتحديد؟'},
+    {key:'action',label:'الإجراء (Action)',placeholder:'ما الخطوات التي اتخذتها بشكل شخصي؟'},
+    {key:'result',label:'النتيجة بالأرقام (Result)',placeholder:'مثال: وفّرنا 40% من التكاليف، أنجزنا قبل الموعد بأسبوعين...'},
+  ];
+  document.getElementById('modal-content').innerHTML=`
+    <p style="font-size:16px;font-weight:800;color:var(--gold);margin-bottom:18px;">${s.icon} ${s.title}</p>
+    ${fields.map(f=>`
+      <p style="font-size:11px;font-weight:700;color:var(--slate);margin-bottom:5px;margin-top:14px;">${f.label}</p>
+      <textarea id="f-${f.key}" style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:10px;color:var(--text);padding:10px 12px;font-size:13px;font-family:'Cairo',sans-serif;min-height:70px;direction:rtl;" placeholder="${f.placeholder}">${d[f.key]||''}</textarea>
+
+```
+`).join('')}
+<div style="display:flex;gap:10px;margin-top:18px;">
+  <button class="btn-primary" style="flex:1;padding:11px;" onclick="saveStory('${id}')">حفظ وإنجاز ✓</button>
+  <button class="btn-outline" onclick="closeModal()">إغلاق</button>
+</div>`;
+```
+
+document.getElementById(‘modal’).style.display=‘flex’;
+}
+
+function saveStory(id){
+state[‘star_’+id]={
+situation:document.getElementById(‘f-situation’).value,
+task:document.getElementById(‘f-task’).value,
+action:document.getElementById(‘f-action’).value,
+result:document.getElementById(‘f-result’).value,
+done:true
+};
+saveState();closeModal();renderPhase1();renderDashboard();
+}
+
+// ══════════════════ PHASE 2 ══════════════════
+function renderPhase2(){
+const grid=document.getElementById(‘fc-grid’);
+grid.innerHTML=’’;
+TERMS.forEach(t=>{
+const mastered=isTermMastered(t.id);
+const wrapper=document.createElement(‘div’);
+wrapper.style.cssText=‘display:flex;flex-direction:column;’;
+const card=document.createElement(‘div’);
+card.id=‘fc-’+t.id;
+card.className=‘fc-card flip-card’+(mastered?’ mastered’:’’);
+card.style.cssText=`background:#1e293b;border:1px solid #334155;border-radius:14px 14px 0 0;padding:0;position:relative;display:flex;flex-direction:column;`;
+card.innerHTML=` <div class="flip-card-inner" style="padding:14px;min-height:130px;"> <div class="flip-card-front" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:102px;"> <p style="font-size:13px;font-weight:800;color:var(--gold);line-height:1.4;margin-bottom:8px;">${t.term}</p> <p style="font-size:10px;color:var(--slate);">اضغط للتعريف</p> </div> <div class="flip-card-back" style="min-height:102px;"> <p style="font-size:11px;color:#e2e8f0;line-height:1.6;margin-bottom:6px;text-align:right;">${t.def}</p> <p style="font-size:10px;color:var(--slate);font-style:italic;text-align:right;">${t.example}</p> </div> </div>`;
+card.addEventListener(‘click’,()=>card.classList.toggle(‘flipped’));
+const btn=document.createElement(‘button’);
+btn.id=‘mb-’+t.id;
+btn.style.cssText=`width:100%;border-radius:0 0 14px 14px;border:none;border-top:1px solid #334155;background:${mastered?'rgba(16,185,129,0.15)':'transparent'};color:${mastered?'#34d399':'var(--slate)'};font-size:11px;font-weight:700;padding:8px;cursor:pointer;font-family:'Cairo',sans-serif;transition:background 0.2s;`;
+btn.textContent=mastered?‘✓ تم الإتقان’:‘أتقنت هذا المصطلح’;
+btn.onclick=(e)=>{e.stopPropagation();masterTerm(t.id);};
+wrapper.appendChild(card);wrapper.appendChild(btn);
+grid.appendChild(wrapper);
+});
+}
+
+function masterTerm(id){
+state[‘term_’+id]=true;saveState();
+const btn=document.getElementById(‘mb-’+id);
+const card=document.getElementById(‘fc-’+id);
+if(card)card.classList.add(‘mastered’);
+if(btn){btn.textContent=‘✓ تم الإتقان’;btn.style.background=‘rgba(16,185,129,0.15)’;btn.style.color=’#34d399’;}
+renderDashboard();
+}
+
+// ══════════════════ PHASE 3 ══════════════════
+function renderPhase3(){
+const list=document.getElementById(‘checklist’);
+list.innerHTML=’’;
+CHECKS.forEach(c=>{
+const checked=isChecked(c.id);
+const el=document.createElement(‘div’);
+el.className=‘checklist-item’+(checked?’ checked’:’’);
+el.style.cssText=`background:#1e293b;border:1px solid #334155;border-radius:13px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;`;
+el.onclick=()=>toggleCheck(c.id);
+el.innerHTML=` <div style="width:22px;height:22px;border-radius:7px;border:2px solid ${checked?'var(--emerald)':'#475569'};background:${checked?'var(--emerald)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all 0.2s;"> ${checked?'<span style="color:white;font-size:13px;font-weight:900;">✓</span>':''} </div> <div> <p style="font-size:14px;font-weight:600;color:${checked?'var(--slate)':'var(--text)'};margin:0 0 3px;${checked?'text-decoration:line-through;':''}">${c.label}</p> <p style="font-size:11px;color:var(--slate);margin:0;line-height:1.5;">${c.sub}</p> </div>`;
+list.appendChild(el);
+});
+}
+
+function toggleCheck(id){state[‘check_’+id]=!isChecked(id);saveState();renderPhase3();renderDashboard();}
+
+// ══════════════════ MODAL ══════════════════
+function closeModal(){document.getElementById(‘modal’).style.display=‘none’;}
+function handleModalBgClick(e){if(e.target===document.getElementById(‘modal’))closeModal();}
+
+// ══════════════════ RESET ══════════════════
+function resetAll(){
+if(confirm(‘هل أنت متأكد؟ سيتم مسح جميع البيانات وبدء خطة جديدة من الصفر.’)){
+localStorage.removeItem(STORAGE_KEY);
+state={};
+showScreen(‘dashboard’);
+}
+}
+
+// ══════════════════ INIT ══════════════════
+loadState();
+renderDashboard();
+</script>
+
+</body>
+</html>
