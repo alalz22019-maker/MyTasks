@@ -4,6 +4,7 @@ import TaskForm from '../components/TaskForm'
 import ApiKeyInput from '../components/ApiKeyInput'
 import { callClaude, EXTRACT_SYSTEM } from '../utils/claude'
 import { deduplicateTasks, isDuplicateTask } from '../utils/dedup'
+import { useAuth } from '../contexts/AuthContext' // 🔴 استيراد الصلاحيات
 
 const MY_NAMES = ['علي الزهراني', 'ali alzahrani', 'ali', 'علي']
 
@@ -22,6 +23,8 @@ function genId() {
 }
 
 export default function TasksPage({ tasks, setTasks, apiKey, setApiKey, showToast }) {
+  const { isUser } = useAuth() // 🔴 جلب صلاحية المستخدم الحالي
+
   const [filter, setFilter] = useState('all')
   const [showForm, setShowForm] = useState(false)
   const [editTask, setEditTask] = useState(null)
@@ -257,21 +260,24 @@ export default function TasksPage({ tasks, setTasks, apiKey, setApiKey, showToas
               <span>{VIEW_MODES.find(v => v.id === viewMode)?.icon}</span>
               <span style={{ fontSize: 11 }}>{VIEW_MODES.find(v => v.id === viewMode)?.label}</span>
             </button>
-            <button
-              onClick={() => setShowApiKey(true)}
-              style={{
-                background: apiKey ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
-                color: apiKey ? 'var(--green)' : 'var(--orange)',
-                border: 'none',
-                borderRadius: 8,
-                padding: '6px 10px',
-                fontSize: 12,
-                fontFamily: 'var(--font)',
-                cursor: 'pointer'
-              }}
-            >
-              {apiKey ? '🔑 API' : '⚙️ API'}
-            </button>
+            {/* 🔴 إخفاء زر API عن الموظف العادي */}
+            {!isUser && (
+              <button
+                onClick={() => setShowApiKey(true)}
+                style={{
+                  background: apiKey ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)',
+                  color: apiKey ? 'var(--green)' : 'var(--orange)',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '6px 10px',
+                  fontSize: 12,
+                  fontFamily: 'var(--font)',
+                  cursor: 'pointer'
+                }}
+              >
+                {apiKey ? '🔑 API' : '⚙️ API'}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -487,10 +493,12 @@ export default function TasksPage({ tasks, setTasks, apiKey, setApiKey, showToas
         +
       </button>
 
-      {/* FAB Extract */}
-      <button className="extract-fab" onClick={() => setShowWaExtract(true)}>
-        ⚡ استخراج سريع
-      </button>
+      {/* 🔴 إخفاء زر الاستخراج السريع عن الموظف العادي */}
+      {!isUser && (
+        <button className="extract-fab" onClick={() => setShowWaExtract(true)}>
+          ⚡ استخراج سريع
+        </button>
+      )}
 
       {/* Modals */}
       {showForm && (
@@ -499,12 +507,12 @@ export default function TasksPage({ tasks, setTasks, apiKey, setApiKey, showToas
       {editTask && (
         <TaskForm task={editTask} onSave={updateTask} onClose={() => setEditTask(null)} apiKey={apiKey} />
       )}
-      {showApiKey && (
+      {showApiKey && !isUser && (
         <ApiKeyInput apiKey={apiKey} setApiKey={setApiKey} onClose={() => setShowApiKey(false)} />
       )}
 
       {/* WhatsApp Extract Modal */}
-      {showWaExtract && (
+      {showWaExtract && !isUser && (
         <div className="modal-overlay" onClick={() => { setShowWaExtract(false); setExtractedTasks([]) }}>
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-handle" />
