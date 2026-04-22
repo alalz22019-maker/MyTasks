@@ -159,6 +159,29 @@ export default function TaskCard({
           )}
         </div>
       )}
+
+      {/* لوق التحديثات */}
+      {actionsOpen && task.updates && task.updates.length > 0 && (
+        <div style={{
+          margin: '0 12px 8px', padding: '8px 10px', borderRadius: 10,
+          background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.12)',
+        }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text2)', marginBottom: 6 }}>📝 سجل التحديثات</div>
+          {task.updates.slice(-5).reverse().map((u, i) => (
+            <div key={i} style={{
+              fontSize: 11, color: 'var(--text2)', marginBottom: 4, paddingBottom: 4,
+              borderBottom: i < Math.min(task.updates.length, 5) - 1 ? '1px solid var(--border)' : 'none',
+              lineHeight: 1.5,
+            }}>
+              <span style={{ fontWeight: 600, color: 'var(--text)' }}>{u.from}</span>
+              <span style={{ fontSize: 10, color: 'var(--text3)', marginRight: 6 }}>
+                {u.timestamp ? new Date(u.timestamp).toLocaleDateString('ar-SA') : ''}
+              </span>
+              <div style={{ marginTop: 2 }}>{u.message}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
