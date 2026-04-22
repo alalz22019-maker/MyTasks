@@ -130,7 +130,7 @@ function isReportTask(t) {
 }
 
 /* ─── Component ────────────────────────────────── */
-export default function MyDashboard({ tasks, showToast, onNavigate }) {
+export default function MyDashboard({ tasks, showToast, onNavigate, updateRequests = [], pendingRequests = [] }) {
   const { userProfile, isAdmin } = useAuth()
   const userName = userProfile?.name || 'مستخدم'
   const firstName = userName.split(' ').pop() || userName
@@ -347,6 +347,70 @@ export default function MyDashboard({ tasks, showToast, onNavigate }) {
             </div>
           </div>
         )}
+
+        {/* 🔔 التنبيهات — أول شي يشوفه الموظف */}
+        {(() => {
+          const myUpdates = updateRequests.filter(u => u.status === 'pending' && u.requestedFromName === userName)
+          const myApprovedReqs = pendingRequests.length
+          const alertCount = myUpdates.length + overdueTasks.length
+          if (alertCount === 0 && myApprovedReqs === 0) return null
+          return (
+            <div style={{
+              margin: '12px 16px 0', padding: '14px 16px', borderRadius: 14,
+              background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                🔔 التنبيهات
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>{alertCount + myApprovedReqs}</span>
+              </div>
+
+              {/* طلبات تحديث من المدير */}
+              {myUpdates.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#8b5cf6', marginBottom: 4 }}>📩 طلبات تحديث ({myUpdates.length})</div>
+                  {myUpdates.map(u => (
+                    <div key={u.id} style={{
+                      padding: '8px 10px', borderRadius: 10, marginBottom: 4,
+                      background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)',
+                      fontSize: 12, color: 'var(--text)',
+                    }}>
+                      <div style={{ fontWeight: 600 }}>{u.taskTitle}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>من: {u.requestedByName}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* مهام متأخرة */}
+              {overdueTasks.length > 0 && (
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--orange)', marginBottom: 4 }}>⚠️ مهام متأخرة ({overdueTasks.length})</div>
+                  {overdueTasks.slice(0, 3).map(t => (
+                    <div key={t.id} style={{
+                      padding: '8px 10px', borderRadius: 10, marginBottom: 4,
+                      background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)',
+                      fontSize: 12, color: 'var(--text)',
+                    }}>
+                      <div style={{ fontWeight: 600 }}>{t.title.substring(0, 50)}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>📅 {t.dueDate}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* طلبات معلقة (للمدير) */}
+              {isAdmin && myApprovedReqs > 0 && (
+                <button onClick={() => onNavigate('admin')} style={{
+                  padding: '8px 14px', borderRadius: 10, width: '100%',
+                  background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)',
+                  color: 'var(--blue)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}>
+                  📨 {myApprovedReqs} طلب معلق — عرض في الإدارة →
+                </button>
+              )}
+            </div>
+          )
+        })()}
 
         {/* ④ الملخص الصباحي الذكي */}
         <div style={{

@@ -151,17 +151,23 @@ export default function TaskForm({ task, onSave, onClose, apiKey, defaultTaskTyp
 
   function handleSubmit() {
     if (!form.title.trim() || saving) return
-    // sourceTitle إلزامي إلا للروتينية
-    if (form.sourceType !== 'routine' && !form.sourceTitle?.trim() && form.sourceType) {
-      // تحذير بسيط — مو blocking
-    }
     setSaving(true)
     const finalForm = { ...form }
     if (isUser) finalForm.person = userProfile?.name || ''
     finalForm.done = finalForm.status === 'done'
     // Sync projectNames → projectName string
     finalForm.projectName = (finalForm.projectNames || []).join(', ')
-    onSave(finalForm, selectedSubTasks)
+    
+    // اجتماع + محضر → إضافة مهمة فرعية "إرسال محضر" تلقائياً
+    let finalSubTasks = [...selectedSubTasks]
+    if (finalForm.taskType === 'meeting' && finalForm.meetingRole === 'minutes') {
+      const minutesTitle = `إرسال محضر: ${finalForm.title}`
+      if (!finalSubTasks.includes(minutesTitle)) {
+        finalSubTasks.push(minutesTitle)
+      }
+    }
+    
+    onSave(finalForm, finalSubTasks)
   }
 
   const typeIcons = { task: '📝', meeting: '📅', report: '📊' }
