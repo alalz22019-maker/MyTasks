@@ -891,7 +891,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
       <div className="header" style={{ paddingBottom: '10px' }}>
         <div className="header-row">
           <div>
-            <div className="header-title">مهامي Pro</div>
+            <div className="header-title">My Day</div>
             <div className="header-sub">{userProfile?.name} • PMO مركز عمليات المختبرات</div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>

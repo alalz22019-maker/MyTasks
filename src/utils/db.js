@@ -225,6 +225,50 @@ export async function addActivityLog(taskId, logEntry) {
   })
 }
 
+/* ─── DEPT REPORTS (التقارير الدورية — منقول ومعمّم من فرع الحج) ── */
+
+export function subscribeToDeptReports(callback) {
+  const q = query(collection(db, 'dept_reports'), orderBy('createdAt', 'desc'))
+  return onSnapshot(q, snap => {
+    callback(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+  })
+}
+
+export async function addDeptReport(reportData) {
+  const ref = await addDoc(collection(db, 'dept_reports'), {
+    ...reportData,
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function updateDeptReport(id, data) {
+  await updateDoc(doc(db, 'dept_reports', id), data)
+}
+
+export async function deleteDeptReport(id) {
+  await deleteDoc(doc(db, 'dept_reports', id))
+}
+
+export function subscribeToReportTypes(callback) {
+  const q = query(collection(db, 'report_types'), orderBy('createdAt', 'asc'))
+  return onSnapshot(q, snap => {
+    callback(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+  })
+}
+
+export async function addReportType(typeData) {
+  const ref = await addDoc(collection(db, 'report_types'), {
+    ...typeData,
+    createdAt: serverTimestamp(),
+  })
+  return ref.id
+}
+
+export async function deleteReportType(id) {
+  await deleteDoc(doc(db, 'report_types', id))
+}
+
 /* ─── WEEKLY STAR (نجم الأسبوع) ──────────────────────────── */
 
 /* ─── BUSINESS REPORTS (تقارير الأعمال) ───────────────────── */

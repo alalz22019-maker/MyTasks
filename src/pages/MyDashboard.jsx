@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import PullToRefresh from '../components/PullToRefresh'
-import { saveWeeklyStar, subscribeToWeeklyStars, STAR_CATEGORIES } from '../utils/db'
+import { saveWeeklyStar, subscribeToWeeklyStars, STAR_CATEGORIES, subscribeToDeptReports } from '../utils/db'
 
 const STAR_CATEGORY_INFO = {
   'Action Accelerator': { icon: '🚀', label: 'مسرّع الإنجاز', color: '#3b82f6' },
@@ -132,6 +132,8 @@ function isReportTask(t) {
 /* ─── Component ────────────────────────────────── */
 export default function MyDashboard({ tasks, showToast, onNavigate, updateRequests = [], pendingRequests = 0 }) {
   const { userProfile, isAdmin } = useAuth()
+  const [deptReports, setDeptReports] = useState([])
+  useEffect(() => subscribeToDeptReports(setDeptReports), [])
   const userName = userProfile?.name || 'مستخدم'
   const firstName = userName.split(' ').pop() || userName
 
@@ -287,6 +289,40 @@ export default function MyDashboard({ tasks, showToast, onNavigate, updateReques
       </div>
 
       <div className="page" style={{ paddingBottom: 90 }}>
+
+        {/* 📋 بطاقة التقارير الدورية (منقولة من نسخة الحج) */}
+        <div
+          onClick={() => onNavigate && onNavigate('reporttypes')}
+          style={{
+            margin: '12px 16px 0', padding: '14px 16px', borderRadius: 14,
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.05))',
+            border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>📋 التقارير الدورية</div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
+              إجمالي: {deptReports.length} | مكتمل: {deptReports.filter(r => r.status === 'completed').length} | متبقي: {deptReports.filter(r => r.status !== 'completed').length}
+            </div>
+          </div>
+          <span style={{ fontSize: 18, color: '#a5b4fc' }}>←</span>
+        </div>
+
+        {/* 🗄 الأرشيف (Admin فقط) */}
+        {isAdmin && (
+          <div
+            onClick={() => onNavigate && onNavigate('archive')}
+            style={{
+              margin: '8px 16px 0', padding: '10px 16px', borderRadius: 12,
+              background: 'var(--bg2)', border: '1px solid var(--border)', cursor: 'pointer',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text2)' }}>🗄 أرشيف عهد المختبرات</span>
+            <span style={{ fontSize: 14, color: 'var(--text3)' }}>←</span>
+          </div>
+        )}
 
         {/* ⭐ نجم الأسبوع */}
         {currentWeekStar && (() => {

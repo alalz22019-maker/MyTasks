@@ -119,7 +119,7 @@ function buildWhatsAppText(tasks, userName) {
   }
 
   lines.push(sep)
-  lines.push(`_تم إصداره عبر مهامي Pro_`)
+  lines.push(`_تم إصداره عبر My Day_`)
 
   return lines.join('\n')
 }
@@ -168,7 +168,7 @@ function buildBriefText(tasks) {
   }
 
   lines.push(sep)
-  lines.push(`_تم إصداره عبر مهامي Pro_`)
+  lines.push(`_تم إصداره عبر My Day_`)
   return lines.join('\n')
 }
 
@@ -279,7 +279,7 @@ function buildWeeklyReport(tasks, userName) {
   }
 
   lines.push(sep)
-  lines.push(`_تم إصداره عبر مهامي Pro_`)
+  lines.push(`_تم إصداره عبر My Day_`)
   return lines.join('\n')
 }
 
@@ -483,7 +483,7 @@ function DailyBriefCard({ tasks }) {
                 الموجز اليومي
               </div>
               <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10 }}>
-                مهامي Pro
+                My Day
               </div>
             </div>
             <div style={{
@@ -613,7 +613,7 @@ function DailyBriefCard({ tasks }) {
           )}
 
           <div style={{ textAlign: 'center', paddingTop: 4 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: D.green }}>مهامي Pro</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: D.green }}>My Day</div>
             <div style={{ fontSize: 10, color: D.text3, marginTop: 2 }}>
               {new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })} • {hijri}
             </div>
@@ -1141,7 +1141,7 @@ export default function ReportsPage({ tasks, showToast, apiKey, userProfile }) {
             )}
 
             <div className="exec-report-footer">
-              <div className="exec-foot-brand">مهامي Pro</div>
+              <div className="exec-foot-brand">My Day</div>
               <div className="exec-foot-time">
                 {new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })} • {formatArabicDate()}
               </div>

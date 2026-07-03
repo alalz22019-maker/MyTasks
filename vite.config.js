@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'icon.svg', 'icons/*.png'],
       manifest: {
-        name: 'مهامي Pro',
-        short_name: 'مهامي',
-        description: 'تطبيق إدارة المهام الشخصي — علي الزهراني',
+        name: 'My Day',
+        short_name: 'My Day',
+        description: 'إدارة مهام فريق الأداء والتحليلات P&A — علي الزهراني',
         theme_color: '#0c0c10',
         background_color: '#0c0c10',
         display: 'standalone',

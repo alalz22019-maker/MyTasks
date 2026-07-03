@@ -105,7 +105,7 @@ export default function LoginPage() {
     return (
       <div style={{ minHeight: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'var(--bg)' }}>
         <div style={{ width: '100%', maxWidth: 360, background: 'var(--card)', borderRadius: 20, padding: 28, textAlign: 'center', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.4)' }}>
-          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>مرحباً بك في مهامي Pro</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>مرحباً بك في My Day</div>
           <div style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 20 }}>الرجاء اختيار اسمك من القائمة لمرة واحدة فقط لربط حسابك:</div>
           
           {authError && (
@@ -147,7 +147,7 @@ export default function LoginPage() {
     <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', background: 'var(--bg)' }}>
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
         <div style={{ width: 80, height: 80, borderRadius: 24, background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, margin: '0 auto 20px', boxShadow: '0 8px 32px rgba(59,130,246,0.35)' }}>✓</div>
-        <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--text)', marginBottom: 6 }}>مهامي Pro</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--text)', marginBottom: 6 }}>My Day</div>
         <div style={{ fontSize: 14, color: 'var(--text2)' }}>نظام إدارة المهام — PMO وزارة الصحة</div>
       </div>
 

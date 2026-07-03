@@ -77,7 +77,7 @@ export default function ContactsPage({ contacts, tasks, showToast }) {
     const msg = encodeURIComponent(
       `مرحباً ${name} 👋\n\nمهامك المعلقة (${personTasks.length}):\n` +
       personTasks.map((t, i) => `${i + 1}. ${t.title}${t.dueDate ? ` (${t.dueDate})` : ''}`).join('\n') +
-      '\n\n— مهامي Pro'
+      '\n\n— My Day'
     )
     window.open(`https://wa.me/?text=${msg}`, '_blank')
   }

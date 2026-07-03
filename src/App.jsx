@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { ROLE_LABEL, ROLE_BG, ROLE_COLOR } from './constants'
+import { ROLE_LABEL, ROLE_BG, ROLE_COLOR, ARCHIVE_CUTOFF } from './constants'
 import LoginPage from './pages/LoginPage'
 import TasksPage from './pages/TasksPage'
 import MyDashboard from './pages/MyDashboard'
@@ -9,6 +9,8 @@ import ContactsPage from './pages/ContactsPage'
 import ReportsPage from './pages/ReportsPage'
 import BusinessReportsPage from './pages/BusinessReportsPage'
 import AdminPanel from './pages/AdminPanel'
+import ReportTypesPage from './pages/ReportTypesPage'
+import ArchivePage from './pages/ArchivePage'
 import Toast from './components/Toast'
 import { HARDCODED_API_KEY } from './config'
 import { loadData, saveData } from './utils/storage'
@@ -112,12 +114,27 @@ function AppShell() {
     setPledgeAccepted(true)
   }
 
-  const contacts = deriveContacts(tasks)
+  /* ── فصل الأرشيف: مهام ما قبل ARCHIVE_CUTOFF (عهد المختبرات) تُعرض في الأرشيف فقط ── */
+  const { activeTasks, archivedTasks } = useMemo(() => {
+    const cutoff = new Date(ARCHIVE_CUTOFF); cutoff.setHours(0, 0, 0, 0)
+    const active = [], archived = []
+    for (const t of tasks) {
+      let created = null
+      try {
+        created = t.createdAt?.toDate ? t.createdAt.toDate() : (t.createdAt ? new Date(t.createdAt) : null)
+      } catch { created = null }
+      if (created && created < cutoff) archived.push(t)
+      else active.push(t)
+    }
+    return { activeTasks: active, archivedTasks: archived }
+  }, [tasks])
+
+  const contacts = deriveContacts(activeTasks)
 
   // Notifications: overdue tasks for THIS user only + pending requests
   const overdueTasks = useMemo(() => {
     const today = new Date(); today.setHours(0,0,0,0)
-    return tasks.filter(t => {
+    return activeTasks.filter(t => {
       if (t.done || !t.dueDate) return false
       const d = new Date(t.dueDate); d.setHours(0,0,0,0)
       if (d >= today) return false
@@ -125,7 +142,7 @@ function AppShell() {
       if (isAdmin) return true
       return (t.person || '').trim() === (userProfile?.name || '').trim()
     })
-  }, [tasks, isAdmin, userProfile])
+  }, [activeTasks, isAdmin, userProfile])
   const [showNotifications, setShowNotifications] = useState(false)
   const [readNotifTime, setReadNotifTime] = useState(null)
 
@@ -133,14 +150,14 @@ function AppShell() {
   const upcomingTasks = useMemo(() => {
     const tomorrow = new Date(); tomorrow.setHours(0,0,0,0); tomorrow.setDate(tomorrow.getDate() + 1)
     const dayAfter = new Date(tomorrow); dayAfter.setDate(dayAfter.getDate() + 1)
-    return tasks.filter(t => {
+    return activeTasks.filter(t => {
       if (t.done || !t.dueDate) return false
       const d = new Date(t.dueDate); d.setHours(0,0,0,0)
       if (d < tomorrow || d >= dayAfter) return false
       if (isAdmin || isSuperUser) return true
       return (t.person || '').trim() === (userProfile?.name || '').trim()
     })
-  }, [tasks, isAdmin, isSuperUser, userProfile])
+  }, [activeTasks, isAdmin, isSuperUser, userProfile])
 
   const myPendingUpdates = useMemo(() => {
     if (!userProfile?.name) return []
@@ -226,8 +243,8 @@ function AppShell() {
   }
 
 
-  // رفع الملفات محصور على: علي، منار، وليد فقط
-  const UPLOAD_ALLOWED = ['م. علي الزهراني', 'د. منار سمان', 'د. وليد الحسن']
+  // رفع الملفات محصور على المدير (Admin)
+  const UPLOAD_ALLOWED = ['م. علي الزهراني']
   const canUpload = userProfile && UPLOAD_ALLOWED.includes(userProfile.name)
 
   /* ── Build nav ── */
@@ -297,7 +314,7 @@ function AppShell() {
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {page === 'dashboard' && (
           <MyDashboard
-            tasks={tasks}
+            tasks={activeTasks}
             showToast={showToast}
             onNavigate={setPage}
             updateRequests={updateRequests}
@@ -306,7 +323,7 @@ function AppShell() {
         )}
         {page === 'tasks' && (
           <TasksPage
-            tasks={tasks}
+            tasks={activeTasks}
             apiKey={apiKey}
             setApiKey={persistApiKey}
             showToast={showToast}
@@ -333,26 +350,32 @@ function AppShell() {
         {/* حماية: رفع الملفات محصور على علي ومنار ووليد فقط */}
         {page === 'upload' && canUpload && (
           <UploadPage
-            tasks={tasks}
+            tasks={activeTasks}
             apiKey={apiKey}
             setApiKey={persistApiKey}
             showToast={showToast}
           />
         )}
         {page === 'contacts' && (
-          <ContactsPage contacts={contacts} tasks={tasks} showToast={showToast} />
+          <ContactsPage contacts={contacts} tasks={activeTasks} showToast={showToast} />
         )}
         {page === 'bizreports' && (
           <BusinessReportsPage
-            tasks={tasks}
+            tasks={activeTasks}
             showToast={showToast}
           />
         )}
         {page === 'reports' && (
-          <ReportsPage tasks={tasks} showToast={showToast} apiKey={apiKey} userProfile={userProfile} />
+          <ReportsPage tasks={activeTasks} showToast={showToast} apiKey={apiKey} userProfile={userProfile} />
         )}
         {page === 'admin' && canApprove && (
           <AdminPanel showToast={showToast} canManageUsers={canManageUsers} />
+        )}
+        {page === 'reporttypes' && (
+          <ReportTypesPage />
+        )}
+        {page === 'archive' && isAdmin && (
+          <ArchivePage archivedTasks={archivedTasks} />
         )}
       </div>
 
