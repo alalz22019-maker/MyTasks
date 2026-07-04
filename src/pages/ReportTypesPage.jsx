@@ -5,9 +5,11 @@ import {
   subscribeToReportTypes, addReportType, deleteReportType,
 } from '../utils/db'
 import { DEFAULT_REPORT_TYPES, TEAM_MEMBERS, STATUS_OPTIONS } from '../constants'
+import VisualSummary from '../components/VisualSummary'
 
-export default function ReportTypesPage() {
+export default function ReportTypesPage({ tasks = [], apiKey }) {
   const { firebaseUser, userProfile } = useAuth()
+  const [showSummary, setShowSummary] = useState(false)
   const [reports, setReports] = useState([])
   const [customTypes, setCustomTypes] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -153,11 +155,21 @@ export default function ReportTypesPage() {
 
   return (
     <div className="page" style={{ paddingBottom: 90 }}>
+      {showSummary && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'var(--bg)', overflowY: 'auto' }}>
+          <div style={{ position: 'sticky', top: 0, zIndex: 1001, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+            <span style={{ color: 'var(--text)', fontWeight: 800, fontSize: 15 }}>📊 تقرير حالة المهام</span>
+            <button onClick={() => setShowSummary(false)} style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>✕ إغلاق</button>
+          </div>
+          <VisualSummary tasks={tasks} apiKey={apiKey} />
+        </div>
+      )}
       <div style={S.container}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ color: 'var(--text)', margin: 0, fontSize: 20 }}>📋 التقارير</h2>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <button onClick={() => setShowSummary(true)} style={S.btn('#f59e0b')}>📊 تقرير حالة المهام</button>
             <button onClick={() => { setShowAddType(true); setEditingType(null); setNewTypeName('') }} style={S.btn('#6366f1')}>+ نوع</button>
             <button onClick={() => { resetForm(); setShowForm(true) }} style={S.btn('#10b981')}>+ تقرير</button>
           </div>

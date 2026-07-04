@@ -450,6 +450,7 @@ input, textarea, select {
 
 .task-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
   border-top: 1px solid var(--border);
@@ -457,7 +458,8 @@ input, textarea, select {
 }
 
 .task-action-btn {
-  flex: 1;
+  flex: 1 1 30%;
+  min-width: 90px;
   display: flex;
   align-items: center;
   justify-content: center;

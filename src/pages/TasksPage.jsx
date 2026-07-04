@@ -891,7 +891,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
         <div className="header-row">
           <div>
             <div className="header-title">My Day</div>
-            <div className="header-sub">{userProfile?.name} • PMO مركز عمليات المختبرات</div>
+            <div className="header-sub">{userProfile?.name} • الأداء والتحليلات P&A</div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>
             
@@ -993,7 +993,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
                 value={quickText}
                 onChange={e => setQuickText(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleQuickAdd() }}
-                placeholder="⚡ أضف بجملة: اجتماع مع سعد يوم الأربعاء..."
+                placeholder="⚡ أضف بجملة: اجتماع مع حمادي يوم الأربعاء..."
                 style={{
                   flex: 1, background: 'none', border: 'none', color: 'var(--text)',
                   fontSize: 13, outline: 'none', fontFamily: 'inherit',

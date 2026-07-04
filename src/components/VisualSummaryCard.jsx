@@ -118,7 +118,7 @@ export default function VisualSummaryCard({ cardRef, summary, tasks, editMode, o
               />
             </div>
             <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10 }}>
-              مكتب إدارة المشاريع • مركز عمليات المختبرات
+              مكتب إدارة المشاريع • الأداء والتحليلات P&A
             </div>
           </div>
           {/* HSSC badge */}
@@ -661,7 +661,7 @@ export default function VisualSummaryCard({ cardRef, summary, tasks, editMode, o
         padding: '9px 18px',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <span style={{ fontSize: 9, color: D.text3 }}>تقرير مكتب إدارة المشاريع • مركز عمليات المختبرات</span>
+        <span style={{ fontSize: 9, color: D.text3 }}>تقرير مكتب إدارة المشاريع • الأداء والتحليلات P&A</span>
         <span style={{ fontSize: 9, color: D.green, fontWeight: 700 }}>LOC - PMO</span>
       </div>
 

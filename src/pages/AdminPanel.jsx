@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ARCHIVE_CUTOFF } from '../constants'
 import { getAuth } from 'firebase/auth'
 import {
   getAllUsers, createUser, updateUserRole, deleteUser,
@@ -44,7 +45,16 @@ export default function AdminPanel({ showToast, canManageUsers = false }) {
 
   /* ── Subscribe to requests ── */
   useEffect(() => {
-    const unsub = subscribeToPendingRequests(setRequests)
+    const unsub = subscribeToPendingRequests(list => {
+      /* إخفاء طلبات عهد المختبرات (قبل فاصل الأرشيف) */
+      const cutoff = new Date(ARCHIVE_CUTOFF); cutoff.setHours(0, 0, 0, 0)
+      setRequests(list.filter(r => {
+        try {
+          const created = r.createdAt?.toDate ? r.createdAt.toDate() : (r.createdAt ? new Date(r.createdAt) : null)
+          return !created || created >= cutoff
+        } catch { return true }
+      }))
+    })
     return unsub
   }, [])
 

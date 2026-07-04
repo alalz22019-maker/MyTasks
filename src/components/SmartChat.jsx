@@ -184,9 +184,9 @@ export default function SmartChat({ tasks, onAddTasks, onClose, apiKey, initialT
             </div>
             <div style={{ fontSize: 13, lineHeight: 1.8 }}>
               اكتب أي شي تحتاجه:<br/>
-              • "أضف مهمة على سعد بخصوص النقل"<br/>
+              • "أضف مهمة على حمادي بخصوص راصد"<br/>
               • "كم مهمة عاجلة عندي؟"<br/>
-              • "ساعدني أصيغ مهمة عن تقرير المختبرات"<br/>
+              • "ساعدني أصيغ مهمة عن التقرير الدوري"<br/>
               • أو الصق محضر اجتماع
             </div>
           </div>

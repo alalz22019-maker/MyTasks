@@ -3,6 +3,7 @@ import { callClaude, EXTRACT_SYSTEM, PDF_MEETING_SYSTEM, isDuplicateTask, findDu
 import DuplicateConflictModal from '../components/DuplicateConflictModal'
 import PullToRefresh from '../components/PullToRefresh'
 import { addTask } from '../utils/db'
+import { TEAM_MEMBERS } from '../constants'
 
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -283,13 +284,43 @@ export default function UploadPage({ tasks, apiKey, setApiKey, showToast }) {
 
         {extracted.length > 0 && (
           <div style={{ marginTop: 20 }}>
-            <h3 style={{ marginBottom: 15, fontSize: 16 }}>المهام المستخرجة ({extracted.length})</h3>
+            <h3 style={{ marginBottom: 15, fontSize: 16 }}>المهام المستخرجة ({extracted.length}) — عدّل ما تحتاج قبل الإضافة</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {extracted.map((t, i) => (
-                <div key={genId() + i} style={{ background: 'var(--card-bg)', padding: 15, borderRadius: 12, border: '1px solid var(--border)' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: 15 }}>{t.title}</div>
-                  <div style={{ fontSize: 13, color: 'var(--sub-text)', marginTop: 5 }}>
-                    {t.priority} • {t.person || 'بدون تعيين'} • {t.dueDate || 'بدون تاريخ'}
+                <div key={i} style={{ background: 'var(--card-bg)', padding: 15, borderRadius: 12, border: '1px solid var(--border)' }}>
+                  <input
+                    value={t.title}
+                    onChange={e => setExtracted(list => list.map((x, j) => j === i ? { ...x, title: e.target.value } : x))}
+                    style={{ width: '100%', boxSizing: 'border-box', fontWeight: 'bold', fontSize: 14, background: 'var(--bg2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontFamily: 'inherit' }}
+                  />
+                  <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                    <select
+                      value={t.person || ''}
+                      onChange={e => setExtracted(list => list.map((x, j) => j === i ? { ...x, person: e.target.value } : x))}
+                      style={{ flex: '1 1 40%', minWidth: 120, background: 'var(--bg2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 8px', fontSize: 12, fontFamily: 'inherit' }}
+                    >
+                      <option value="">بدون تعيين</option>
+                      {TEAM_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                    <input
+                      type="date"
+                      value={t.dueDate || ''}
+                      onChange={e => setExtracted(list => list.map((x, j) => j === i ? { ...x, dueDate: e.target.value } : x))}
+                      style={{ flex: '1 1 30%', minWidth: 120, background: 'var(--bg2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 8px', fontSize: 12, fontFamily: 'inherit' }}
+                    />
+                    <select
+                      value={t.priority || 'medium'}
+                      onChange={e => setExtracted(list => list.map((x, j) => j === i ? { ...x, priority: e.target.value } : x))}
+                      style={{ flex: '1 1 20%', minWidth: 85, background: 'var(--bg2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 8px', fontSize: 12, fontFamily: 'inherit' }}
+                    >
+                      <option value="urgent">🔴 عاجل</option>
+                      <option value="medium">🟡 متوسط</option>
+                      <option value="low">🟢 منخفض</option>
+                    </select>
+                    <button
+                      onClick={() => setExtracted(list => list.filter((_, j) => j !== i))}
+                      style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: 'none', borderRadius: 8, padding: '6px 10px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
+                    >🗑</button>
                   </div>
                 </div>
               ))}

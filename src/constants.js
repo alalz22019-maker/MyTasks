@@ -18,7 +18,7 @@ export const ARCHIVE_CUTOFF = '2026-07-03'
 /* أنواع التقارير الافتراضية (صفحة التقارير الدورية) */
 export const DEFAULT_REPORT_TYPES = [
   { value: 'periodic', label: 'التقرير الدوري' },
-  { value: 'supervisory_visit', label: 'تقرير الزيارات الإشرافية' },
+  { value: 'adhoc', label: 'تقرير حسب الطلب' },
 ]
 
 export const SOURCE_TYPES = [
@@ -70,7 +70,7 @@ export const TASK_TYPES = [
   { value: 'meeting', label: 'اجتماع' },
 ]
 
-export const ROLE_LABEL = { admin: 'مدير', superuser: 'مشرف', user: 'موظف' }
+export const ROLE_LABEL = { admin: 'إدارة', superuser: 'منسق', user: 'عضو' }
 export const ROLE_BG    = { admin: 'rgba(139,92,246,0.15)', superuser: 'rgba(59,130,246,0.15)', user: 'rgba(16,185,129,0.12)' }
 export const ROLE_COLOR = { admin: '#a78bfa', superuser: '#60a5fa', user: '#34d399' }
 
