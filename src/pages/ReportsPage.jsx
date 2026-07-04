@@ -69,7 +69,7 @@ function buildWhatsAppText(tasks, userName) {
 
   lines.push(`📋 *تقرير المهام اليومي*`)
   lines.push(`🗓 ${formatArabicDate()}`)
-  lines.push(`👤 ${userName || 'مستخدم'} | PMO مركز عمليات المختبرات`)
+  lines.push(`👤 ${userName || 'مستخدم'} | الأداء والتحليلات P&A`)
   lines.push(sep)
 
   lines.push(`📊 *الملخص التنفيذي*`)
@@ -222,7 +222,7 @@ function buildWeeklyReport(tasks, userName) {
 
   lines.push(`📊 *التقرير الأسبوعي*`)
   lines.push(`🗓 ${formatArabicDate()}`)
-  lines.push(`👤 ${userName || 'مستخدم'} | PMO مركز عمليات المختبرات`)
+  lines.push(`👤 ${userName || 'مستخدم'} | الأداء والتحليلات P&A`)
   lines.push(sep)
 
   lines.push(`📈 *مؤشرات الأداء*`)
@@ -1010,7 +1010,7 @@ export default function ReportsPage({ tasks, showToast, apiKey, userProfile }) {
                 <div className="exec-header-badge">التقرير التنفيذي</div>
               </div>
               <div className="exec-report-date">{formatArabicDate()}</div>
-              <div className="exec-report-user">{userProfile?.name || 'مستخدم'} — PMO | مركز عمليات المختبرات</div>
+              <div className="exec-report-user">{userProfile?.name || 'مستخدم'} — الأداء والتحليلات P&A</div>
 
               <div className="exec-header-bar" />
             </div>
