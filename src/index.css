@@ -17,12 +17,12 @@
   --text3: #5a5a70;
   --blue: #3b82f6;
   --blue-light: #60a5fa;
-  --purple: #8b5cf6;
+  --purple: #f59e0b;
   --purple-light: #a78bfa;
   --green: #10b981;
   --orange: #f59e0b;
   --red: #ef4444;
-  --accent: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  --accent: linear-gradient(135deg, #f59e0b, #f43f5e);
   --radius: 14px;
   --radius-sm: 8px;
   --font: 'IBM Plex Sans Arabic', system-ui, sans-serif;
@@ -264,7 +264,7 @@ input, textarea, select {
 }
 
 .filter-btn.active {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #f59e0b, #f43f5e);
   border-color: transparent;
   color: #fff;
 }
@@ -484,7 +484,7 @@ input, textarea, select {
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #f59e0b, #f43f5e);
   color: #fff;
   font-size: 26px;
   display: flex;
@@ -620,7 +620,7 @@ select.form-input option {
 }
 
 .seg-btn.active {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #f59e0b, #f43f5e);
   color: #fff;
 }
 
@@ -629,7 +629,7 @@ select.form-input option {
   width: 100%;
   padding: 14px;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #f59e0b, #f43f5e);
   color: #fff;
   font-size: 16px;
   font-weight: 600;
@@ -728,7 +728,7 @@ select.form-input option {
 .subtask-checkbox {
   width: 16px;
   height: 16px;
-  accent-color: #8b5cf6;
+  accent-color: #f59e0b;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -818,7 +818,7 @@ select.form-input option {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #f59e0b, #f43f5e);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1090,7 +1090,7 @@ select.form-input option {
 }
 
 .report-tab.active {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: linear-gradient(135deg, #f59e0b, #f43f5e);
   border-color: transparent;
   color: #fff;
   font-weight: 600;

@@ -32,6 +32,36 @@ export default function UploadPage({ tasks, apiKey, setApiKey, showToast }) {
   const [uploadConflicts, setUploadConflicts] = useState(null)
   const inputRef = useRef()
 
+  /* تصغير الصورة قبل الإرسال (صور الآيفون 3-8MB تتجاوز حد Vercel 4.5MB)
+     يحوّل أي صيغة (بما فيها HEIC على iOS) إلى JPEG بأقصى بُعد 1600px */
+  async function downscaleImage(f) {
+    const dataUrl = await new Promise((res, rej) => {
+      const r = new FileReader()
+      r.onload = e => res(e.target.result)
+      r.onerror = () => rej(new Error('تعذّر قراءة الصورة'))
+      r.readAsDataURL(f)
+    })
+    const img = await new Promise((res, rej) => {
+      const i = new Image()
+      i.onload = () => res(i)
+      i.onerror = () => rej(new Error('صيغة الصورة غير مدعومة'))
+      i.src = dataUrl
+    })
+    const MAX = 1600
+    let { width, height } = img
+    if (width > MAX || height > MAX) {
+      const ratio = Math.min(MAX / width, MAX / height)
+      width = Math.round(width * ratio)
+      height = Math.round(height * ratio)
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+    const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.82)
+    return { base64: jpegDataUrl.split(',')[1], mimeType: 'image/jpeg' }
+  }
+
   function handleFile(f) {
     if (!f) return
     setFile(f)
@@ -55,27 +85,43 @@ export default function UploadPage({ tasks, apiKey, setApiKey, showToast }) {
       let isPdfMeeting = false
 
       if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-        const reader = new FileReader()
-        const base64 = await new Promise((res, rej) => {
-          reader.onload = e => res(e.target.result.split(',')[1])
-          reader.onerror = rej
-          reader.readAsDataURL(file)
-        })
-        
+        let base64, mimeType
+
+        if (file.type === 'application/pdf') {
+          if (file.size > 3 * 1024 * 1024) {
+            throw new Error('حجم PDF كبير (الحد 3MB) — صغّر الملف أو قسّمه')
+          }
+          const reader = new FileReader()
+          base64 = await new Promise((res, rej) => {
+            reader.onload = e => res(e.target.result.split(',')[1])
+            reader.onerror = rej
+            reader.readAsDataURL(file)
+          })
+          mimeType = 'application/pdf'
+        } else {
+          /* الصور: تصغير وتحويل JPEG دائماً */
+          const out = await downscaleImage(file)
+          base64 = out.base64
+          mimeType = out.mimeType
+        }
+
         isPdfMeeting = file.type === 'application/pdf'
-        
+
         const response = await fetch('/api/vision', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             base64,
-            mimeType: file.type,
+            mimeType,
             system: isPdfMeeting ? PDF_MEETING_SYSTEM : UPLOAD_SYSTEM,
             prompt: isPdfMeeting ? 'استخرج المهام والتكليفات من هذا المحضر' : 'استخرج المهام من هذه الصورة',
           }),
         })
-        
-        if (!response.ok) throw new Error('فشل في تحليل الملف')
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => null)
+          throw new Error(err?.error || `فشل في تحليل الملف (${response.status})`)
+        }
         const data = await response.json()
         content = data.text
 

@@ -153,8 +153,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
       setDefaultTaskType('meeting')
       setShowForm(true)
     } else if (option === 'report') {
-      setDefaultTaskType('report')
-      setShowForm(true)
+      if (onNavigate) onNavigate('reporttypes')
     } else if (option === 'voice_result') {
       if (!canUseAI) { showToast('⚠️ الإدخال الصوتي متاح للمدراء فقط'); return }
       setVoiceText(data || '')
@@ -453,7 +452,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
       return
     }
     const done = !task.done
-    const updates = { done, status: done ? 'done' : 'new' }
+    const updates = { done, status: done ? 'completed' : 'not_started' }
     if (done && task.recurrence) {
       const newDue = calcNextDue(task.dueDate, task.recurrence)
       Object.assign(updates, { done: false, status: 'not_started', dueDate: newDue, completedAt: null })

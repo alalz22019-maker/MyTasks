@@ -5,9 +5,6 @@ import LoginPage from './pages/LoginPage'
 import TasksPage from './pages/TasksPage'
 import MyDashboard from './pages/MyDashboard'
 import UploadPage from './pages/UploadPage'
-import ContactsPage from './pages/ContactsPage'
-import ReportsPage from './pages/ReportsPage'
-import BusinessReportsPage from './pages/BusinessReportsPage'
 import AdminPanel from './pages/AdminPanel'
 import ReportTypesPage from './pages/ReportTypesPage'
 import ArchivePage from './pages/ArchivePage'
@@ -251,9 +248,7 @@ function AppShell() {
   const NAV = [
     { id: 'dashboard', label: 'لوحتي', icon: '🏠' },
     { id: 'tasks',   label: 'المهام',  icon: '✓'  },
-    { id: 'bizreports', label: 'التقارير', icon: '📋' },
-    ...(isAdmin || isSuperUser ? [{ id: 'reports', label: 'إحصائيات', icon: '📊' }] : []),
-    { id: 'contacts',label: 'جهات',   icon: '👥' },
+    { id: 'reporttypes', label: 'التقارير', icon: '📋' },
     ...(canUpload ? [{ id: 'upload',  label: 'رفع ملف', icon: '📎' }] : []),
     ...(canApprove ? [{ id: 'admin', label: 'إدارة', icon: '⚙️', badge: pendingCount }] : []),
   ]
@@ -355,18 +350,6 @@ function AppShell() {
             setApiKey={persistApiKey}
             showToast={showToast}
           />
-        )}
-        {page === 'contacts' && (
-          <ContactsPage contacts={contacts} tasks={activeTasks} showToast={showToast} />
-        )}
-        {page === 'bizreports' && (
-          <BusinessReportsPage
-            tasks={activeTasks}
-            showToast={showToast}
-          />
-        )}
-        {page === 'reports' && (
-          <ReportsPage tasks={activeTasks} showToast={showToast} apiKey={apiKey} userProfile={userProfile} />
         )}
         {page === 'admin' && canApprove && (
           <AdminPanel showToast={showToast} canManageUsers={canManageUsers} />

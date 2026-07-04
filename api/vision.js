@@ -41,7 +41,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 4096,
         system: system || '',
         messages: [{ role: 'user', content: contentParts }],
@@ -51,7 +51,9 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errBody = await response.text()
       console.error('Anthropic Vision error:', response.status, errBody)
-      return res.status(response.status).json({ error: `API error: ${response.status}` })
+      let detail = ''
+      try { detail = JSON.parse(errBody)?.error?.message || '' } catch { detail = errBody.slice(0, 200) }
+      return res.status(response.status).json({ error: `API ${response.status}: ${detail}` })
     }
 
     const data = await response.json()
