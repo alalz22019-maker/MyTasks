@@ -8,7 +8,7 @@
 import {
   collection, doc, getDocs, getDoc,
   addDoc, setDoc, updateDoc, deleteDoc,
-  query, orderBy, onSnapshot, serverTimestamp, writeBatch,
+  query, orderBy, onSnapshot, serverTimestamp, writeBatch, arrayUnion,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -222,6 +222,14 @@ export async function addActivityLog(taskId, logEntry) {
   const current = snap.data().activityLog || []
   await updateDoc(ref, {
     activityLog: [...current, { ...logEntry, at: new Date().toISOString() }]
+  })
+}
+
+/* ─── PROGRESS UPDATES (تحديثات التقدم على المهمة) ─────────── */
+
+export async function addTaskProgressUpdate(taskId, { text, by }) {
+  await updateDoc(doc(db, 'tasks', taskId), {
+    updates: arrayUnion({ text, by: by || '', at: new Date().toISOString() }),
   })
 }
 

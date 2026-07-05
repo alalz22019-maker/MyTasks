@@ -3,7 +3,7 @@ import { callClaude, EXTRACT_SYSTEM, PDF_MEETING_SYSTEM, isDuplicateTask, findDu
 import DuplicateConflictModal from '../components/DuplicateConflictModal'
 import PullToRefresh from '../components/PullToRefresh'
 import { addTask } from '../utils/db'
-import { TEAM_MEMBERS } from '../constants'
+import { TEAM_MEMBERS, PROJECT_FILES, SOURCE_TYPES } from '../constants'
 
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -316,6 +316,21 @@ export default function UploadPage({ tasks, apiKey, setApiKey, showToast }) {
                       <option value="urgent">🔴 عاجل</option>
                       <option value="medium">🟡 متوسط</option>
                       <option value="low">🟢 منخفض</option>
+                    </select>
+                    <select
+                      value={t.projectName || ''}
+                      onChange={e => setExtracted(list => list.map((x, j) => j === i ? { ...x, projectName: e.target.value } : x))}
+                      style={{ flex: '1 1 40%', minWidth: 120, background: 'var(--bg2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 8px', fontSize: 12, fontFamily: 'inherit' }}
+                    >
+                      <option value="">📁 الملف</option>
+                      {PROJECT_FILES.map(f => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                    <select
+                      value={t.sourceType || 'minutes'}
+                      onChange={e => setExtracted(list => list.map((x, j) => j === i ? { ...x, sourceType: e.target.value } : x))}
+                      style={{ flex: '1 1 30%', minWidth: 100, background: 'var(--bg2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 8px', fontSize: 12, fontFamily: 'inherit' }}
+                    >
+                      {SOURCE_TYPES.filter(st => st.value).map(st => <option key={st.value} value={st.value}>📌 {st.label}</option>)}
                     </select>
                     <button
                       onClick={() => setExtracted(list => list.filter((_, j) => j !== i))}

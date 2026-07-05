@@ -14,11 +14,13 @@ function formatDate(d) {
 
 export default function TaskCard({
   task, onToggle, onEdit, onDelete, showToast, onAddSubtask, onRequestUpdate,
-  onTransfer,
+  onTransfer, onAddProgress,
   childCount = 0, isCollapsed, onToggleCollapse,
   isSubtask = false, childProgress
 }) {
   const [actionsOpen, setActionsOpen] = useState(false)
+  const [updateBox, setUpdateBox] = useState(false)
+  const [updateText, setUpdateText] = useState('')
   const isParent = childCount > 0
   const effectiveStatus = getEffectiveStatus(task)
   const statusInfo = getStatusInfo(effectiveStatus)
@@ -125,11 +127,40 @@ export default function TaskCard({
               <span className="badge badge-project">📁 {task.projectName}</span>
             )}
           </div>
+          {Array.isArray(task.updates) && task.updates.length > 0 && (
+            <div style={{ marginTop: 6, fontSize: 11, color: 'var(--text2)', background: 'var(--bg2)', borderRadius: 8, padding: '6px 8px', border: '1px solid var(--border)' }}>
+              📝 آخر تحديث: {task.updates[task.updates.length - 1].text}
+              <span style={{ color: 'var(--text3)' }}> — {task.updates[task.updates.length - 1].by}{task.updates.length > 1 ? ` (+${task.updates.length - 1} سابقة)` : ''}</span>
+            </div>
+          )}
         </div>
       </div>
 
+      {actionsOpen && updateBox && (
+        <div style={{ marginTop: 10, borderTop: '1px solid var(--border)', paddingTop: 10, display: 'flex', gap: 6 }}>
+          <input
+            value={updateText}
+            onChange={e => setUpdateText(e.target.value)}
+            placeholder="اكتب التحديث..."
+            style={{ flex: 1, background: 'var(--bg2)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', fontSize: 13, fontFamily: 'inherit' }}
+          />
+          <button
+            onClick={() => {
+              if (!updateText.trim()) return
+              onAddProgress && onAddProgress(task, updateText.trim())
+              setUpdateText(''); setUpdateBox(false)
+            }}
+            style={{ background: 'linear-gradient(135deg, #f59e0b, #f43f5e)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+          >حفظ</button>
+        </div>
+      )}
       {actionsOpen && (
         <div className="task-actions">
+          {onAddProgress && !task.done && (
+            <button className="task-action-btn" onClick={() => setUpdateBox(v => !v)} style={{ color: '#10b981' }}>
+              <span>📝</span> إضافة تحديث
+            </button>
+          )}
           <button className="task-action-btn whatsapp" onClick={shareWhatsApp}>
             <span>💬</span> واتساب
           </button>

@@ -5,9 +5,9 @@ import {
   subscribeToReportTypes, addReportType, deleteReportType,
 } from '../utils/db'
 import { DEFAULT_REPORT_TYPES, TEAM_MEMBERS, STATUS_OPTIONS } from '../constants'
-import VisualSummary from '../components/VisualSummary'
+import ReportsPage from './ReportsPage'
 
-export default function ReportTypesPage({ tasks = [], apiKey }) {
+export default function ReportTypesPage({ tasks = [], apiKey, showToast }) {
   const { firebaseUser, userProfile } = useAuth()
   const [showSummary, setShowSummary] = useState(false)
   const [reports, setReports] = useState([])
@@ -161,7 +161,7 @@ export default function ReportTypesPage({ tasks = [], apiKey }) {
             <span style={{ color: 'var(--text)', fontWeight: 800, fontSize: 15 }}>📊 تقرير حالة المهام</span>
             <button onClick={() => setShowSummary(false)} style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', color: 'var(--text)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>✕ إغلاق</button>
           </div>
-          <VisualSummary tasks={tasks} apiKey={apiKey} />
+          <ReportsPage tasks={tasks} apiKey={apiKey} showToast={showToast} userProfile={userProfile} />
         </div>
       )}
       <div style={S.container}>

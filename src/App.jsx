@@ -355,7 +355,7 @@ function AppShell() {
           <AdminPanel showToast={showToast} canManageUsers={canManageUsers} />
         )}
         {page === 'reporttypes' && (
-          <ReportTypesPage tasks={activeTasks} apiKey={apiKey} />
+          <ReportTypesPage tasks={activeTasks} apiKey={apiKey} showToast={showToast} />
         )}
         {page === 'archive' && isAdmin && (
           <ArchivePage archivedTasks={archivedTasks} />

@@ -1,3 +1,5 @@
+import { PROJECT_FILES } from '../constants'
+
 /**
  * Claude API utilities — calls Vercel serverless function at /api/chat
  * which proxies to Anthropic Claude API (key stays server-side)
@@ -122,8 +124,9 @@ ${tasksSummary}
 → أولاً: اكتب رد قصير يوضح وش فهمت
 → ثانياً: ضع المهام في JSON block:
 \`\`\`json
-{"tasks": [{"id": "t1", "title": "عنوان واضح ومحدد", "priority": "urgent|medium|low", "person": "الاسم الكامل", "dueDate": "YYYY-MM-DD أو فارغ", "projectName": "اسم المشروع لو واضح"}]}
+{"tasks": [{"id": "t1", "title": "عنوان واضح ومحدد", "priority": "urgent|medium|low", "person": "الاسم الكامل", "dueDate": "YYYY-MM-DD أو فارغ", "projectName": "من قائمة الملفات فقط"}]}
 \`\`\`
+📁 قاعدة صارمة للملفات: projectName يجب أن يكون حصراً واحداً من: ${PROJECT_FILES.join('، ')} — إذا ما ينطبق أي ملف استخدم "أخرى". لا تخترع أسماء ملفات جديدة أبداً.
 
 3️⃣ محضر اجتماع أو نص طويل:
 → استخرج كل مهمة/قرار/توصية → رتبها حسب الأولوية → ضعها في JSON block
@@ -145,6 +148,7 @@ ${tasksSummary}
 // ─── Extract tasks from text (Notes page) ───────────────────
 export const EXTRACT_SYSTEM = `أنت مساعد ذكي لاستخراج المهام من النصوص العربية. حلل النص واستخرج كل مهمة واضحة.
 📅 تاريخ اليوم: ${new Date().toISOString().slice(0, 10)} — استخدمه لحساب أي تاريخ نسبي (بكرا، الأربعاء القادم، نهاية الشهر).
+📁 projectName يجب أن يكون حصراً من: ${PROJECT_FILES.join('، ')} — أو "أخرى".
 أرجع JSON array فقط بدون أي نص إضافي:
 [{"title": "عنوان المهمة", "priority": "urgent|medium|low", "person": "", "dueDate": "", "projectName": ""}]`
 
@@ -154,7 +158,7 @@ export const EXTRACT_SYSTEM_EN = EXTRACT_SYSTEM
 export const ANALYZE_TASK_SYSTEM = `أنت مساعد لتحليل مهام فريق الأداء والتحليلات (P&A). حلل عنوان المهمة واقترح:
 - الأولوية المناسبة
 - الشخص المسؤول من الفريق (لو واضح من السياق)
-- اسم المشروع المناسب
+- اسم الملف المناسب حصراً من: ${PROJECT_FILES.join('، ')} — أو "أخرى"
 - مهام فرعية مقترحة
 - سبب مختصر لاختياراتك
 
@@ -174,7 +178,7 @@ export async function analyzeTaskWithAI(apiKey, taskTitle) {
 
 // ─── PDF Meeting extraction ─────────────────────────────────
 export const PDF_MEETING_SYSTEM = `أنت مساعد لاستخراج مهام فريق الأداء والتحليلات (P&A). أرجع JSON فقط:
-{"meetingTitle": "اسم", "chairperson": "اسم", "suggestedProject": "مشروع", "tasks": []}`
+{"meetingTitle": "اسم", "chairperson": "اسم", "suggestedProject": "من: ${PROJECT_FILES.join('، ')}", "tasks": []}`
 
 // ─── Visual Summary ─────────────────────────────────────────
 export const VISUAL_SUMMARY_SYSTEM = `أنت خبير مكتب إدارة المشاريع (PMO). حلل المهام وأرجع تقرير JSON يخدم م. علي الزهراني (فريق الأداء والتحليلات).

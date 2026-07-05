@@ -16,6 +16,7 @@ import {
   createRequest,
   addUpdateToTask,
   addActivityLog,
+  addTaskProgressUpdate,
 } from '../utils/db'
 
 // --- دوال منع التكرار ---
@@ -1040,7 +1041,12 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
           <div className="task-list">
             {taskGroups.map(({ task, children }) => (
               <div key={task.id} className="task-group">
-                <TaskCard task={task} onToggle={toggleTask} onEdit={setEditTask} onDelete={canDelete ? id => setDeleteConfirm(id) : null} showToast={showToast} childCount={children.length} isCollapsed={collapsedGroups.has(task.id)} onToggleCollapse={() => toggleCollapse(task.id)} onAddSubtask={canWrite ? handleAddSubtask : null} childProgress={childProgressMap[task.id]} onRequestUpdate={onRequestUpdate} onTransfer={canWrite ? setTransferTask : null} />
+                <TaskCard task={task} onToggle={toggleTask} onEdit={setEditTask} onDelete={canDelete ? id => setDeleteConfirm(id) : null} showToast={showToast} childCount={children.length} isCollapsed={collapsedGroups.has(task.id)} onToggleCollapse={() => toggleCollapse(task.id)} onAddSubtask={canWrite ? handleAddSubtask : null} childProgress={childProgressMap[task.id]} onRequestUpdate={onRequestUpdate} onTransfer={canWrite ? setTransferTask : null} onAddProgress={async (task, text) => {
+                  try {
+                    await addTaskProgressUpdate(task.id, { text, by: userProfile?.name || '' })
+                    showToast('📝 تم إضافة التحديث')
+                  } catch { showToast('❌ خطأ في حفظ التحديث') }
+                }} />
                 {children.length > 0 && !collapsedGroups.has(task.id) && (
                   <div className="subtask-group">
                     {children.map(c => <SubtaskInline key={c.id} task={c} onToggle={toggleTask} onUpdate={handleSubtaskInlineUpdate} onDelete={canDelete ? id => setDeleteConfirm(id) : null} onAssign={t => { setAssignSubtask(t); setAssignTo('') }} canWrite={canWrite} />)}

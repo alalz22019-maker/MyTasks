@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { callClaudeChat, buildSmartChatSystem } from '../utils/claude'
-import { TEAM_MEMBERS as TEAM } from '../constants'
+import { TEAM_MEMBERS as TEAM, PROJECT_FILES, SOURCE_TYPES } from '../constants'
 
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -132,6 +132,8 @@ export default function SmartChat({ tasks, onAddTasks, onClose, apiKey, initialT
         person:      t.person      || '',
         dueDate:     t.dueDate     || '',
         projectName: t.projectName || '',
+        sourceType:  t.sourceType  || 'directive',
+        sourceTitle: t.sourceTitle || 'مساعد My Day',
         recurrence:  '',
         reminderTime: '',
         done: false,
@@ -241,7 +243,18 @@ export default function SmartChat({ tasks, onAddTasks, onClose, apiKey, initialT
                               boxSizing: 'border-box',
                             }} disabled={isOff} />
                             <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-                              <span>{PRIORITY_LABELS[t.priority] || '🟡 متوسط'}</span>
+                              {/* الأولوية — قابلة للتعديل */}
+                              <select value={t.priority || 'medium'} onChange={e => {
+                                setPendingTasks(prev => prev.map(p => p.id === t.id ? { ...p, priority: e.target.value } : p))
+                              }} disabled={isOff} style={{
+                                fontSize: 11, padding: '2px 4px', borderRadius: 6,
+                                border: '1px solid var(--border)', background: 'var(--bg)',
+                                color: 'var(--text)', fontFamily: 'inherit',
+                              }}>
+                                <option value="urgent">🔴 عاجل</option>
+                                <option value="medium">🟡 متوسط</option>
+                                <option value="low">🟢 منخفض</option>
+                              </select>
                               {/* المسؤول — قابل للتعديل */}
                               <select value={t.person || ''} onChange={e => {
                                 setPendingTasks(prev => prev.map(p => p.id === t.id ? { ...p, person: e.target.value } : p))
@@ -261,7 +274,27 @@ export default function SmartChat({ tasks, onAddTasks, onClose, apiKey, initialT
                                 border: '1px solid var(--border)', background: 'var(--bg)',
                                 color: 'var(--text)', fontFamily: 'inherit',
                               }} />
-                              {t.projectName && <span>📁 {t.projectName}</span>}
+                              {/* الملف — قابل للتعديل */}
+                              <select value={t.projectName || ''} onChange={e => {
+                                setPendingTasks(prev => prev.map(p => p.id === t.id ? { ...p, projectName: e.target.value } : p))
+                              }} disabled={isOff} style={{
+                                fontSize: 11, padding: '2px 4px', borderRadius: 6,
+                                border: '1px solid var(--border)', background: 'var(--bg)',
+                                color: 'var(--text)', fontFamily: 'inherit', maxWidth: 130,
+                              }}>
+                                <option value="">📁 الملف</option>
+                                {PROJECT_FILES.map(f => <option key={f} value={f}>{f}</option>)}
+                              </select>
+                              {/* المصدر — قابل للتعديل */}
+                              <select value={t.sourceType || 'directive'} onChange={e => {
+                                setPendingTasks(prev => prev.map(p => p.id === t.id ? { ...p, sourceType: e.target.value } : p))
+                              }} disabled={isOff} style={{
+                                fontSize: 11, padding: '2px 4px', borderRadius: 6,
+                                border: '1px solid var(--border)', background: 'var(--bg)',
+                                color: 'var(--text)', fontFamily: 'inherit', maxWidth: 110,
+                              }}>
+                                {SOURCE_TYPES.filter(st => st.value).map(st => <option key={st.value} value={st.value}>📌 {st.label}</option>)}
+                              </select>
                             </div>
                           </div>
                           <button onClick={() => toggleSkip(t.id)} style={{
