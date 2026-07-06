@@ -849,7 +849,7 @@ export default function ReportsPage({ tasks, showToast, apiKey, userProfile }) {
 
   const { isUser } = useAuth() 
 
-  const [tab, setTab] = useState('dashboard')
+  const [tab, setTab] = useState('visual')
   const [visualType, setVisualType] = useState('executive')
 
   const all       = tasks
@@ -910,25 +910,13 @@ export default function ReportsPage({ tasks, showToast, apiKey, userProfile }) {
 
       <div className="report-tab-bar">
         <button
-          className={`report-tab${tab === 'dashboard' ? ' active' : ''}`}
-          onClick={() => setTab('dashboard')}
-        >الإحصائيات</button>
+          className={`report-tab${tab === 'visual' ? ' active' : ''}`}
+          onClick={() => setTab('visual')}
+        >🎨 بصري</button>
         <button
-          className={`report-tab${tab === 'executive' ? ' active' : ''}`}
-          onClick={() => setTab('executive')}
-        >التنفيذي</button>
-        {!isUser && (
-          <button
-            className={`report-tab${tab === 'visual' ? ' active' : ''}`}
-            onClick={() => setTab('visual')}
-          >🎨 بصري</button>
-        )}
-        {!isUser && (
-          <button
-            className={`report-tab${tab === 'weekly' ? ' active' : ''}`}
-            onClick={() => setTab('weekly')}
-          >📊 الأسبوعي</button>
-        )}
+          className={`report-tab${tab === 'weekly' ? ' active' : ''}`}
+          onClick={() => setTab('weekly')}
+        >📊 الأسبوعي</button>
       </div>
 
       {tab === 'dashboard' && (

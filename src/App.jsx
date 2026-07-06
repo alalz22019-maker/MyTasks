@@ -7,6 +7,7 @@ import MyDashboard from './pages/MyDashboard'
 import UploadPage from './pages/UploadPage'
 import AdminPanel from './pages/AdminPanel'
 import ReportTypesPage from './pages/ReportTypesPage'
+import ReportsPage from './pages/ReportsPage'
 import ArchivePage from './pages/ArchivePage'
 import Toast from './components/Toast'
 import { HARDCODED_API_KEY } from './config'
@@ -249,6 +250,7 @@ function AppShell() {
     { id: 'dashboard', label: 'لوحتي', icon: '🏠' },
     { id: 'tasks',   label: 'المهام',  icon: '✓'  },
     { id: 'reporttypes', label: 'التقارير', icon: '📋' },
+    { id: 'stats', label: 'إحصائيات', icon: '📊' },
     ...(canUpload ? [{ id: 'upload',  label: 'رفع ملف', icon: '📎' }] : []),
     ...(canApprove ? [{ id: 'admin', label: 'إدارة', icon: '⚙️', badge: pendingCount }] : []),
   ]
@@ -355,7 +357,10 @@ function AppShell() {
           <AdminPanel showToast={showToast} canManageUsers={canManageUsers} />
         )}
         {page === 'reporttypes' && (
-          <ReportTypesPage tasks={activeTasks} apiKey={apiKey} showToast={showToast} />
+          <ReportTypesPage />
+        )}
+        {page === 'stats' && (
+          <ReportsPage tasks={activeTasks} showToast={showToast} apiKey={apiKey} userProfile={userProfile} />
         )}
         {page === 'archive' && isAdmin && (
           <ArchivePage archivedTasks={archivedTasks} />
