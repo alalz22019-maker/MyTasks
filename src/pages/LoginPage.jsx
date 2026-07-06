@@ -2,27 +2,18 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { getFirestore, doc, setDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore'
 
-// قائمة الأسماء والأدوار المعتمدة في النظام بناءً على الكشف الرسمي
+// قائمة أسماء وأدوار فريق الأداء والتحليلات P&A
+// إدارة: علي + فيصل | منسق: حمادي + محمد | عضو: البقية
 const INITIAL_TEAM_MAP = [
   { name: 'م. علي الزهراني', role: 'admin' },
-  { name: 'د. منار سمان', role: 'admin' },
-  { name: 'د. وليد الحسن', role: 'admin' },
-  { name: 'أ. عبير الشدوخي', role: 'superuser' },
-  { name: 'د. حامد الزهراني', role: 'user' },
-  { name: 'أ. حماد المظيبري', role: 'user' },
-  { name: 'أ. محمد القرشي', role: 'user' },
-  { name: 'أ. محمد الحجيلي', role: 'user' },
-  { name: 'أ. سعد القرشي', role: 'user' },
-  { name: 'أ. أميرة التميمي', role: 'user' },
-  { name: 'Eksha Mohapatra', role: 'user' },
-  { name: 'د. مرام الشهراني', role: 'user' },
-  { name: 'أ. وفاء آل إسماعيل', role: 'user' },
-  { name: 'د. سمية الغريب', role: 'user' },
-  { name: 'أ. مشاعل المطيري', role: 'user' },
-  { name: 'أ. صفاء الشهري', role: 'user' },
-  { name: 'أ. أمجاد المطيري', role: 'user' },
-  { name: 'أ. مي الأسمري', role: 'user' },
-  { name: 'أ. شادي نبيل', role: 'user' }
+  { name: 'أ. فيصل الرحيمي', role: 'admin' },
+  { name: 'م. حمادي الشعائره', role: 'superuser' },
+  { name: 'أ. محمد القحطاني', role: 'superuser' },
+  { name: 'أ. صفا الشهري', role: 'user' },
+  { name: 'أ. صالحة المالكي', role: 'user' },
+  { name: 'أ. نورة التركي', role: 'user' },
+  { name: 'أ. رهف جباري', role: 'user' },
+  { name: 'أ. تركي السلمان', role: 'user' },
 ]
 
 export default function LoginPage() {

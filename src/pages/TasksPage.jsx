@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx'
 import TaskCard from '../components/TaskCard'
 import SubtaskInline from '../components/SubtaskInline'
 import TaskForm from '../components/TaskForm'
-import { STATUS_OPTIONS, migrateStatus, TEAM_MEMBERS } from '../constants'
+import { STATUS_OPTIONS, migrateStatus, TEAM_MEMBERS, PROJECT_FILES } from '../constants'
 import SmartChat from '../components/SmartChat'
 import MeetingMinutesParser from '../components/MeetingMinutesParser'
 import QuickAddMenu from '../components/QuickAddMenu'
@@ -138,7 +138,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
     })
   }
 
-  // المحادثة الذكية والمحضر والصوتي محصورة على: علي، منار، وليد
+  // المحادثة الذكية والمحضر والصوتي
   const canUseAI = true // متاح للجميع
 
   // Handle QuickAddMenu option
@@ -532,8 +532,10 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
     try {
       const system = `أنت مساعد لتحويل نص عربي (عامي أو فصيح) إلى مهمة منظمة.
 حلل النص واستخرج: العنوان، الأولوية، الشخص المسؤول، التاريخ، المشروع، نوع المهمة (task/meeting/report).
-أعضاء الفريق: م. علي الزهراني، د. منار سمان، د. وليد الحسن، أ. عبير الشدوخي، د. حامد الزهراني، أ. حماد المظيبري، أ. محمد القرشي، أ. محمد الحجيلي، أ. سعد القرشي، أ. أميرة التميمي، د. مرام الشهراني، أ. وفاء آل إسماعيل، د. سمية الغريب، أ. مشاعل المطيري، أ. صفاء الشهري، أ. أمجاد المطيري، أ. مي الأسمري، أ. شادي نبيل
-لو ذكر اسم مختصر (سعد، حماد، وفاء) طابقه مع الاسم الكامل.
+📅 تاريخ اليوم: ${new Date().toISOString().slice(0, 10)} — استخدمه لأي تاريخ نسبي.
+أعضاء الفريق: ${TEAM_MEMBERS.join('، ')}
+لو ذكر اسم مختصر (حمادي، صفا، نورة، محمد، تركي) طابقه مع الاسم الكامل.
+📁 projectName حصراً من: ${PROJECT_FILES.join('، ')} — أو "أخرى".
 أرجع JSON فقط بدون أي نص:
 {"title":"","priority":"medium","person":"","dueDate":"","projectName":"","taskType":"task","meetingTime":"","meetingLocation":""}`
 

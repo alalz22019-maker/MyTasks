@@ -342,7 +342,7 @@ function AppShell() {
             } : null}
           />
         )}
-        {/* حماية: رفع الملفات محصور على علي ومنار ووليد فقط */}
+        {/* حماية: رفع الملفات محصور على الإدارة */}
         {page === 'upload' && canUpload && (
           <UploadPage
             tasks={activeTasks}
