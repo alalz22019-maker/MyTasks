@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import PullToRefresh from '../components/PullToRefresh'
-import VisualSummary from '../components/VisualSummary'
+import ComprehensiveReport from '../components/ComprehensiveReport'
 import { D, KPI_PALETTE, CARD, formatDates } from '../components/VisualSummaryColors'
 import { exportPNG, exportPDF, shareImage } from '../components/VisualSummaryExport'
 import { useAuth } from '../contexts/AuthContext' 
@@ -1167,7 +1167,7 @@ export default function ReportsPage({ tasks, showToast, apiKey, userProfile }) {
             >⚡ اليومي</button>
           </div>
 
-          {visualType === 'executive' && <VisualSummary tasks={tasks} apiKey={apiKey} />}
+          {visualType === 'executive' && <ComprehensiveReport tasks={tasks} />}
           {visualType === 'daily'     && <DailyBriefCard tasks={tasks} />}
         </div>
       )}
