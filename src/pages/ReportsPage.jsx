@@ -1152,7 +1152,7 @@ export default function ReportsPage({ tasks, showToast, apiKey, userProfile }) {
                 color: visualType === 'executive' ? '#fff' : 'var(--text2)',
                 transition: 'all 0.2s',
               }}
-            >✨ التنفيذي</button>
+            >🧾 الشامل</button>
             <button
               onClick={() => setVisualType('daily')}
               style={{

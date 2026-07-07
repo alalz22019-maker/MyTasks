@@ -7,7 +7,7 @@ import {
 import { DEFAULT_REPORT_TYPES, TEAM_MEMBERS, STATUS_OPTIONS } from '../constants'
 
 export default function ReportTypesPage() {
-  const { firebaseUser, userProfile } = useAuth()
+  const { firebaseUser, userProfile, isAdmin } = useAuth()
   const [reports, setReports] = useState([])
   const [customTypes, setCustomTypes] = useState([])
   const [showForm, setShowForm] = useState(false)
@@ -158,7 +158,9 @@ export default function ReportTypesPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ color: 'var(--text)', margin: 0, fontSize: 20 }}>📋 التقارير</h2>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <button onClick={() => { setShowAddType(true); setEditingType(null); setNewTypeName('') }} style={S.btn('#6366f1')}>+ نوع</button>
+            {isAdmin && (
+              <button onClick={() => { setShowAddType(true); setEditingType(null); setNewTypeName('') }} style={S.btn('#6366f1')}>+ نوع</button>
+            )}
             <button onClick={() => { resetForm(); setShowForm(true) }} style={S.btn('#10b981')}>+ تقرير</button>
           </div>
         </div>
@@ -189,7 +191,7 @@ export default function ReportTypesPage() {
                   fontSize: 12, padding: '6px 12px', color: filter === t.value ? '#fff' : 'var(--text2)',
                   borderTopLeftRadius: 0, borderBottomLeftRadius: 0,
                 }}>{t.label} ({count})</button>
-                {isCustom && (
+                {isCustom && isAdmin && (
                   confirmDeleteType === t.value ? (
                     <div style={{ display: 'flex', gap: 2 }}>
                       <button onClick={() => handleDeleteType(t.value)} style={{ ...S.btn('#ef4444'), padding: '4px 6px', fontSize: 10, borderRadius: '8px 0 0 8px' }}>حذف</button>

@@ -14,6 +14,7 @@ const INITIAL_TEAM_MAP = [
   { name: 'أ. نورة التركي', role: 'user' },
   { name: 'أ. رهف جباري', role: 'user' },
   { name: 'أ. تركي السلمان', role: 'user' },
+  { name: 'أ. ريما الفهيد', role: 'user' },
 ]
 
 export default function LoginPage() {

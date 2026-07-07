@@ -8,7 +8,7 @@
 import {
   collection, doc, getDocs, getDoc,
   addDoc, setDoc, updateDoc, deleteDoc,
-  query, orderBy, onSnapshot, serverTimestamp, writeBatch, arrayUnion,
+  query, where, orderBy, onSnapshot, serverTimestamp, writeBatch, arrayUnion,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -35,7 +35,15 @@ export async function updateTask(id, data) {
 }
 
 export async function deleteTask(id) {
-  await deleteDoc(doc(db, 'tasks', id))
+  /* حذف متسلسل: المهمة + كل مهامها الفرعية (كانت الفرعية تبقى يتيمة فتبدو المهمة غير محذوفة) */
+  const batch = writeBatch(db)
+  batch.delete(doc(db, 'tasks', id))
+  const childrenSnap = await getDocs(query(collection(db, 'tasks'), where('parentId', '==', id)))
+  childrenSnap.forEach(child => batch.delete(child.ref))
+  await batch.commit()
+  /* تحقق فعلي من الحذف */
+  const check = await getDoc(doc(db, 'tasks', id))
+  if (check.exists()) throw new Error('التحقق فشل: المستند ما زال موجوداً')
 }
 
 /** Bulk-import tasks from localStorage array (first run migration) */
