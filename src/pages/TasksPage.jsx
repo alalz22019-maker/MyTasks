@@ -468,7 +468,17 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
 
   async function deleteTask(id) {
     if (!canDelete) { showToast('⚠️ ليس لديك صلاحية الحذف'); return }
-    try { await dbDeleteTask(id); showToast('🗑 تم حذف المهمة') } catch (e) { showToast('❌ خطأ في الحذف') }
+    try {
+      const result = await dbDeleteTask(id)
+      if (result?.duplicates > 0) {
+        showToast(`🗑 تم الحذف — ⚠️ توجد ${result.duplicates} نسخة مكررة بنفس العنوان`)
+      } else {
+        showToast('🗑 تم حذف المهمة نهائياً')
+      }
+    } catch (e) {
+      console.error('Delete failed:', e)
+      showToast(`❌ فشل الحذف: ${e?.message || e?.code || 'خطأ غير معروف'}`)
+    }
     setDeleteConfirm(null)
   }
 

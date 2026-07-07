@@ -35,15 +35,29 @@ export async function updateTask(id, data) {
 }
 
 export async function deleteTask(id) {
-  /* حذف متسلسل: المهمة + كل مهامها الفرعية (كانت الفرعية تبقى يتيمة فتبدو المهمة غير محذوفة) */
+  /* اقرأ العنوان قبل الحذف لكشف النسخ المكررة */
+  const snap = await getDoc(doc(db, 'tasks', id))
+  const title = snap.exists() ? (snap.data().title || '').trim() : ''
+
+  /* حذف متسلسل: المهمة + كل مهامها الفرعية */
   const batch = writeBatch(db)
   batch.delete(doc(db, 'tasks', id))
   const childrenSnap = await getDocs(query(collection(db, 'tasks'), where('parentId', '==', id)))
   childrenSnap.forEach(child => batch.delete(child.ref))
   await batch.commit()
+
   /* تحقق فعلي من الحذف */
   const check = await getDoc(doc(db, 'tasks', id))
-  if (check.exists()) throw new Error('التحقق فشل: المستند ما زال موجوداً')
+  if (check.exists()) throw new Error('المستند ما زال موجوداً بعد الحذف')
+
+  /* كشف النسخ المكررة المتبقية بنفس العنوان */
+  if (!title) return { duplicates: 0 }
+  const allSnap = await getDocs(collection(db, 'tasks'))
+  let duplicates = 0
+  allSnap.forEach(d => {
+    if ((d.data().title || '').trim() === title) duplicates++
+  })
+  return { duplicates }
 }
 
 /** Bulk-import tasks from localStorage array (first run migration) */
