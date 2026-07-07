@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ARCHIVE_CUTOFF } from '../constants'
+import { deleteAllTasksAfterCutoff } from '../utils/db'
 import { getAuth } from 'firebase/auth'
 import {
   getAllUsers, createUser, updateUserRole, deleteUser,
@@ -22,6 +23,8 @@ const REQUEST_TYPE_LABEL = {
 
 export default function AdminPanel({ showToast, canManageUsers = false }) {
   const [tab, setTab] = useState('requests')
+  const [wipeStep, setWipeStep] = useState(0)
+  const [wiping, setWiping] = useState(false)
   const [users, setUsers]     = useState([])
   const [requests, setRequests] = useState([])
   const [loadingUsers, setLoadingUsers]   = useState(false)
@@ -381,6 +384,39 @@ export default function AdminPanel({ showToast, canManageUsers = false }) {
           )}
         </div>
       )}
+      {/* 🧨 منطقة الخطر — مؤقتة */}
+      <div style={{ margin: '24px 16px 40px', padding: 14, borderRadius: 14, border: '1px solid rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.06)' }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: '#ef4444', marginBottom: 6 }}>🧨 منطقة الخطر</div>
+        <div style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 10, lineHeight: 1.6 }}>
+          حذف جميع المهام الحالية (ما بعد الانتقال) نهائياً من قاعدة البيانات. الأرشيف لا يُمس. لا تراجع بعد التنفيذ.
+        </div>
+        {wipeStep === 0 && (
+          <button onClick={() => setWipeStep(1)} style={{ width: '100%', padding: '10px', background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            🗑 حذف جميع المهام
+          </button>
+        )}
+        {wipeStep === 1 && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button disabled={wiping} onClick={async () => {
+              setWiping(true)
+              try {
+                const r = await deleteAllTasksAfterCutoff()
+                showToast(`🧨 حُذفت ${r.deleted} مهمة — المتبقي في القاعدة: ${r.remaining}`)
+              } catch (e) {
+                console.error(e)
+                showToast(`❌ فشل الحذف الشامل: ${e?.message || 'خطأ'}`)
+              }
+              setWiping(false)
+              setWipeStep(0)
+            }} style={{ flex: 1, padding: '10px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', opacity: wiping ? 0.6 : 1 }}>
+              {wiping ? '⏳ جاري الحذف...' : 'تأكيد الحذف النهائي'}
+            </button>
+            <button disabled={wiping} onClick={() => setWipeStep(0)} style={{ flex: 1, padding: '10px', background: 'var(--bg3)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              إلغاء
+            </button>
+          </div>
+        )}
+      </div>
     </PullToRefresh>
   )
 }

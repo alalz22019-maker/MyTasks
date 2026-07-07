@@ -273,6 +273,37 @@ export async function addActivityLog(taskId, logEntry) {
   })
 }
 
+/* ─── DANGER: حذف جميع المهام ما بعد الأرشيف (زر إداري مؤقت) ── */
+
+export async function deleteAllTasksAfterCutoff() {
+  const cutoff = new Date(ARCHIVE_CUTOFF); cutoff.setHours(0, 0, 0, 0)
+  const allSnap = await getDocs(collection(db, 'tasks'))
+  const targets = []
+  allSnap.forEach(d => {
+    const data = d.data()
+    let created = null
+    try { created = data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt ? new Date(data.createdAt) : null) } catch { created = null }
+    const isArchived = created && created < cutoff
+    if (!isArchived) targets.push(d.ref)
+  })
+  /* دفعات 450 (حد Firestore 500) */
+  for (let i = 0; i < targets.length; i += 450) {
+    const batch = writeBatch(db)
+    targets.slice(i, i + 450).forEach(ref => batch.delete(ref))
+    await batch.commit()
+  }
+  /* تحقق فعلي */
+  const verify = await getDocs(collection(db, 'tasks'))
+  let remaining = 0
+  verify.forEach(d => {
+    const data = d.data()
+    let created = null
+    try { created = data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt ? new Date(data.createdAt) : null) } catch { created = null }
+    if (!(created && created < cutoff)) remaining++
+  })
+  return { deleted: targets.length, remaining }
+}
+
 /* ─── PROGRESS UPDATES (تحديثات التقدم على المهمة) ─────────── */
 
 export async function addTaskProgressUpdate(taskId, { text, by }) {
