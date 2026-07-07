@@ -11,6 +11,7 @@ import {
   query, where, orderBy, onSnapshot, serverTimestamp, writeBatch, arrayUnion,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { ARCHIVE_CUTOFF } from '../constants'
 
 /* ─── TASKS ──────────────────────────────────────────────── */
 
@@ -34,30 +35,55 @@ export async function updateTask(id, data) {
   await updateDoc(doc(db, 'tasks', id), data)
 }
 
-export async function deleteTask(id) {
-  /* اقرأ العنوان قبل الحذف لكشف النسخ المكررة */
-  const snap = await getDoc(doc(db, 'tasks', id))
-  const title = snap.exists() ? (snap.data().title || '').trim() : ''
+/* تطبيع العنوان: إزالة المحارف الخفية وتوحيد المسافات — لكشف التوائم المتطابقة ظاهرياً */
+function normalizeTitle(t) {
+  return (t || '')
+    .normalize('NFC')
+    .replace(/[\u200b-\u200f\u202a-\u202e\ufeff\u00a0]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
-  /* حذف متسلسل: المهمة + كل مهامها الفرعية */
+export async function deleteTask(id) {
+  /* اقرأ العنوان قبل الحذف */
+  const snap = await getDoc(doc(db, 'tasks', id))
+  const normTitle = snap.exists() ? normalizeTitle(snap.data().title) : ''
+
+  /* حذف متسلسل: المهمة + كل مهامها الفرعية + كل التوائم بنفس العنوان المطبَّع وفرعياتها */
   const batch = writeBatch(db)
   batch.delete(doc(db, 'tasks', id))
   const childrenSnap = await getDocs(query(collection(db, 'tasks'), where('parentId', '==', id)))
   childrenSnap.forEach(child => batch.delete(child.ref))
+
+  let twins = 0
+  if (normTitle) {
+    const allSnap = await getDocs(collection(db, 'tasks'))
+    const twinIds = []
+    const cutoff = new Date(ARCHIVE_CUTOFF); cutoff.setHours(0, 0, 0, 0)
+    allSnap.forEach(d => {
+      const data = d.data()
+      let created = null
+      try { created = data.createdAt?.toDate ? data.createdAt.toDate() : (data.createdAt ? new Date(data.createdAt) : null) } catch { created = null }
+      const isArchived = created && created < cutoff
+      if (!isArchived && d.id !== id && normalizeTitle(data.title) === normTitle) {
+        twinIds.push(d.id)
+        batch.delete(d.ref)
+        twins++
+      }
+    })
+    /* فرعيات التوائم */
+    for (const tid of twinIds) {
+      const tc = await getDocs(query(collection(db, 'tasks'), where('parentId', '==', tid)))
+      tc.forEach(child => batch.delete(child.ref))
+    }
+  }
   await batch.commit()
 
   /* تحقق فعلي من الحذف */
   const check = await getDoc(doc(db, 'tasks', id))
   if (check.exists()) throw new Error('المستند ما زال موجوداً بعد الحذف')
 
-  /* كشف النسخ المكررة المتبقية بنفس العنوان */
-  if (!title) return { duplicates: 0 }
-  const allSnap = await getDocs(collection(db, 'tasks'))
-  let duplicates = 0
-  allSnap.forEach(d => {
-    if ((d.data().title || '').trim() === title) duplicates++
-  })
-  return { duplicates }
+  return { twins }
 }
 
 /** Bulk-import tasks from localStorage array (first run migration) */

@@ -470,8 +470,8 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
     if (!canDelete) { showToast('⚠️ ليس لديك صلاحية الحذف'); return }
     try {
       const result = await dbDeleteTask(id)
-      if (result?.duplicates > 0) {
-        showToast(`🗑 تم الحذف — ⚠️ توجد ${result.duplicates} نسخة مكررة بنفس العنوان`)
+      if (result?.twins > 0) {
+        showToast(`🗑 تم حذف المهمة و${result.twins} نسخة مكررة منها`)
       } else {
         showToast('🗑 تم حذف المهمة نهائياً')
       }
