@@ -6,7 +6,7 @@ import TasksPage from './pages/TasksPage'
 import MyDashboard from './pages/MyDashboard'
 import UploadPage from './pages/UploadPage'
 import AdminPanel from './pages/AdminPanel'
-import ReportTypesPage from './pages/ReportTypesPage'
+import { RasedReportsPage, InitiativesPage } from './pages/RasedRegistry'
 import ReportsPage from './pages/ReportsPage'
 import ArchivePage from './pages/ArchivePage'
 import Toast from './components/Toast'
@@ -250,6 +250,7 @@ function AppShell() {
     { id: 'dashboard', label: 'لوحتي', icon: '🏠' },
     { id: 'tasks',   label: 'المهام',  icon: '✓'  },
     { id: 'reporttypes', label: 'التقارير', icon: '📋' },
+    { id: 'initiatives', label: 'المبادرات', icon: '🚀' },
     { id: 'stats', label: 'إحصائيات', icon: '📊' },
     ...(canUpload ? [{ id: 'upload',  label: 'رفع ملف', icon: '📎' }] : []),
     ...(canApprove ? [{ id: 'admin', label: 'إدارة', icon: '⚙️', badge: pendingCount }] : []),
@@ -357,7 +358,10 @@ function AppShell() {
           <AdminPanel showToast={showToast} canManageUsers={canManageUsers} />
         )}
         {page === 'reporttypes' && (
-          <ReportTypesPage showToast={showToast} />
+          <RasedReportsPage showToast={showToast} />
+        )}
+        {page === 'initiatives' && (
+          <InitiativesPage showToast={showToast} />
         )}
         {page === 'stats' && (
           <ReportsPage tasks={activeTasks} showToast={showToast} apiKey={apiKey} userProfile={userProfile} />

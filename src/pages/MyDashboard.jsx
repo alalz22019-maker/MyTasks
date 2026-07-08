@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import PullToRefresh from '../components/PullToRefresh'
-import { saveWeeklyStar, subscribeToWeeklyStars, STAR_CATEGORIES, subscribeToDeptReports } from '../utils/db'
+import { saveWeeklyStar, subscribeToWeeklyStars, STAR_CATEGORIES, subscribeToRasedReports } from '../utils/db'
 
 const STAR_CATEGORY_INFO = {
   'Action Accelerator': { icon: '🚀', label: 'مسرّع الإنجاز', color: '#3b82f6' },
@@ -133,7 +133,7 @@ function isReportTask(t) {
 export default function MyDashboard({ tasks, showToast, onNavigate, updateRequests = [], pendingRequests = 0 }) {
   const { userProfile, isAdmin } = useAuth()
   const [deptReports, setDeptReports] = useState([])
-  useEffect(() => subscribeToDeptReports(setDeptReports), [])
+  useEffect(() => subscribeToRasedReports(setDeptReports), [])
   const userName = userProfile?.name || 'مستخدم'
   const firstName = userName.split(' ').pop() || userName
 
@@ -303,7 +303,7 @@ export default function MyDashboard({ tasks, showToast, onNavigate, updateReques
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>📋 التقارير الدورية</div>
             <div style={{ fontSize: 12, color: 'var(--text3)', marginTop: 2 }}>
-              إجمالي: {deptReports.length} | مكتمل: {deptReports.filter(r => r.status === 'completed').length} | متبقي: {deptReports.filter(r => r.status !== 'completed').length}
+              إجمالي: {deptReports.length} | مكتمل: {deptReports.filter(r => r.status === 'Completed').length} | متبقي: {deptReports.filter(r => r.status !== 'Completed').length}
             </div>
           </div>
           <span style={{ fontSize: 18, color: '#a5b4fc' }}>←</span>
