@@ -29,6 +29,13 @@ export const COVERAGE_MAP = {
 /* تاريخ فاصل الأرشيف: كل مهمة أُنشئت قبله تُعتبر أرشيف عهد المختبرات */
 export const ARCHIVE_CUTOFF = '2026-07-03'
 
+/* قوائم سجل راصد (مطابقة لقوائم القالب المنسدلة) */
+export const RASED_DEPARTMENTS = ['Performance Analyst ', 'Data Analyst ', 'HASTT', 'AI']
+export const RASED_FREQUENCIES = ['Weekly', 'Monthly', 'Quarterly', 'Annual']
+export const RASED_REPORT_STATUS = ['Not Started', 'In Progress', 'Completed', 'Delayed']
+export const RASED_MEETING_TYPES = ['Clusters', 'Committees', 'Projects', 'Support Services', 'External', 'Others']
+export const RASED_PRIORITIES = ['Critical', 'High', 'Medium', 'Low']
+
 /* أنواع التقارير الافتراضية (صفحة التقارير الدورية) */
 export const DEFAULT_REPORT_TYPES = [
   { value: 'periodic', label: 'التقرير الدوري' },

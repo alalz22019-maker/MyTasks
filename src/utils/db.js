@@ -273,6 +273,36 @@ export async function addActivityLog(taskId, logEntry) {
   })
 }
 
+/* ─── RASED REGISTRY (مبادرات / تقارير / اجتماعات راصد) ────── */
+
+function registrySubscribe(coll) {
+  return (callback) => {
+    const q = query(collection(db, coll), orderBy('createdAt', 'asc'))
+    return onSnapshot(q, snap => callback(snap.docs.map(d => ({ id: d.id, ...d.data() }))))
+  }
+}
+async function registryAdd(coll, data) {
+  const ref = await addDoc(collection(db, coll), { ...data, createdAt: serverTimestamp() })
+  return ref.id
+}
+
+export const subscribeToInitiatives = registrySubscribe('rased_initiatives')
+export const subscribeToRasedReports = registrySubscribe('rased_reports')
+export const subscribeToRasedMeetings = registrySubscribe('rased_meetings')
+export const addInitiative = (d) => registryAdd('rased_initiatives', d)
+export const addRasedReport = (d) => registryAdd('rased_reports', d)
+export const addRasedMeeting = (d) => registryAdd('rased_meetings', d)
+export async function updateRegistryItem(coll, id, data) {
+  await updateDoc(doc(db, coll, id), data)
+}
+export async function deleteRegistryItem(coll, id) {
+  await deleteDoc(doc(db, coll, id))
+}
+export async function getRegistryAll(coll) {
+  const snap = await getDocs(collection(db, coll))
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
 /* ─── DANGER: حذف جميع المهام ما بعد الأرشيف (زر إداري مؤقت) ── */
 
 export async function deleteAllTasksAfterCutoff() {

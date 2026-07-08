@@ -17,8 +17,7 @@ import {
   createRequest,
   addUpdateToTask,
   addActivityLog,
-  addTaskProgressUpdate,
-} from '../utils/db'
+  addTaskProgressUpdate, getRegistryAll, updateRegistryItem, addInitiative, addRasedReport, addRasedMeeting } from '../utils/db'
 
 // --- دوال منع التكرار ---
 function normalizeAr(s) {
@@ -922,8 +921,95 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
         }
       }
 
+      /* ── استيراد سجل راصد: المبادرات والتقارير والاجتماعات ── */
+      let regCount = 0
+      const parseSheet = (name, headerRange) => {
+        const sn = workbook.SheetNames.find(n => n.trim() === name)
+        return sn ? XLSX.utils.sheet_to_json(workbook.Sheets[sn], { defval: '', range: headerRange }) : []
+      }
+      const cleanV = (v) => {
+        const x = (v ?? '').toString().trim()
+        return x === 'None' ? '' : x
+      }
+      const lowKeys = (r) => {
+        const o = {}
+        for (const k in r) o[k.trim().toLowerCase()] = r[k]
+        return o
+      }
+      const compToPct = (v) => {
+        let c = typeof v === 'number' ? v : parseFloat(String(v).replace('%', ''))
+        if (isNaN(c)) return ''
+        if (c <= 1) c = c * 100
+        return String(Math.round(c))
+      }
+
+      /* المبادرات */
+      const existInit = await getRegistryAll('rased_initiatives')
+      for (const raw of parseSheet('Initiatives', 3)) {
+        const r = lowKeys(raw)
+        const name = cleanV(r['name'])
+        if (!name) continue
+        const data = {
+          name, description: cleanV(r['description']), department: cleanV(r['department']),
+          startDate: r['start date'] ? parseExcelDate(r['start date']) : '',
+          dueDate: r['due date'] ? parseExcelDate(r['due date']) : '',
+          completion: compToPct(r['completion %']),
+          priority: cleanV(r['priority']),
+          owner: extractOwners(cleanV(r['primary owner']))[0] || '',
+          secondaryOwner: extractOwners(cleanV(r['secondary owner']))[0] || '',
+          comments: cleanV(r['comments']),
+        }
+        const ex = existInit.find(x => (x.name || '').trim() === name)
+        if (ex) await updateRegistryItem('rased_initiatives', ex.id, data)
+        else await addInitiative(data)
+        regCount++
+      }
+
+      /* التقارير */
+      const existRep = await getRegistryAll('rased_reports')
+      for (const raw of parseSheet('Reports', 3)) {
+        const r = lowKeys(raw)
+        const name = cleanV(r['name'])
+        if (!name) continue
+        const data = {
+          name, purpose: cleanV(r['purpose']), frequency: cleanV(r['frequency']),
+          department: cleanV(r['department']),
+          startDate: r['start date'] ? parseExcelDate(r['start date']) : '',
+          dueDate: r['due date'] ? parseExcelDate(r['due date']) : '',
+          status: cleanV(r['status']) || 'Not Started',
+          priority: cleanV(r['priority']),
+          owner: extractOwners(cleanV(r['primary owner']))[0] || '',
+          secondaryOwner: extractOwners(cleanV(r['secondary owner']))[0] || '',
+          comments: cleanV(r['comments']),
+        }
+        const ex = existRep.find(x => (x.name || '').trim() === name)
+        if (ex) await updateRegistryItem('rased_reports', ex.id, data)
+        else await addRasedReport(data)
+        regCount++
+      }
+
+      /* الاجتماعات — الرؤوس في الصف 5 */
+      const existMeet = await getRegistryAll('rased_meetings')
+      for (const raw of parseSheet('Meetings', 4)) {
+        const r = lowKeys(raw)
+        const name = cleanV(r['meeting name'])
+        if (!name) continue
+        const data = {
+          name, purpose: cleanV(r['purpose']), meetingType: cleanV(r['type of meeting']),
+          department: cleanV(r['department']), frequency: cleanV(r['frequency']),
+          schedule: cleanV(r['schedule']),
+          statusWeek: cleanV(r['status - (for current week)'] || r['status']) || 'Not Done',
+          organizer: extractOwners(cleanV(r['organizer']))[0] || '',
+          comments: cleanV(r['comments']),
+        }
+        const ex = existMeet.find(x => (x.name || '').trim() === name)
+        if (ex) await updateRegistryItem('rased_meetings', ex.id, data)
+        else await addRasedMeeting(data)
+        regCount++
+      }
+
       setShowExportMenu(false)
-      showToast(`✅ تم تحديث ${updated} وإضافة ${added} مهمة`)
+      showToast(`✅ مهام: ${updated} محدّثة + ${added} جديدة | سجل راصد: ${regCount}`)
     } catch (err) {
       console.error('Excel import error:', err)
       showToast('❌ خطأ في الاستيراد: ' + err.message)
@@ -992,8 +1078,13 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
                   <button onClick={async () => {
                     try {
                       showToast('⏳ جاري توليد ملف راصد...')
-                      const r = await exportRased(tasks)
-                      showToast(`📊 ملف راصد جاهز — ${r.exported} مهمة`)
+                      const [ini, rep, meet] = await Promise.all([
+                        getRegistryAll('rased_initiatives'),
+                        getRegistryAll('rased_reports'),
+                        getRegistryAll('rased_meetings'),
+                      ])
+                      const r = await exportRased(tasks, { initiatives: ini, reports: rep, meetings: meet })
+                      showToast(`📊 ملف راصد جاهز — ${r.exported} مهمة + ${r.registry} سجل`)
                       setShowExportMenu(false)
                     } catch (err) {
                       console.error(err)

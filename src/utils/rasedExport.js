@@ -80,7 +80,30 @@ function setCell(rowXml, col, rowNum, value, isText) {
   return rowXml.replace('</row>', `${cell}</row>`)
 }
 
-export async function exportRased(tasks) {
+/* تعبئة ورقة عامة: sheetPath، صف البداية والنهاية، وخريطة أعمدة لكل سجل */
+function fillSheet(xml, firstRow, lastRow, records, colMap) {
+  for (let r = firstRow; r <= lastRow; r++) {
+    const rowRe = new RegExp(`<row r="${r}"[ >][\\s\\S]*?</row>`)
+    const rowMatch = xml.match(rowRe)
+    if (!rowMatch) continue
+    let rowXml = rowMatch[0]
+    const rec = records[r - firstRow] || null
+    for (const [col, getter, isText] of colMap) {
+      const v = rec ? getter(rec) : (isText ? '' : null)
+      rowXml = setCell(rowXml, col, r, v, isText)
+    }
+    xml = xml.replace(rowRe, rowXml)
+  }
+  return xml
+}
+
+const pctToFraction = (v) => {
+  const n = parseFloat(v)
+  if (isNaN(n)) return null
+  return n > 1 ? n / 100 : n
+}
+
+export async function exportRased(tasks, registry = {}) {
   const { default: JSZip } = await import('jszip')
   const res = await fetch('/rased-template.xlsx')
   if (!res.ok) throw new Error('تعذّر تحميل قالب راصد المضمّن')
@@ -118,6 +141,58 @@ export async function exportRased(tasks) {
   }
 
   zip.file(SHEET_PATH, xml)
+
+  /* ── المبادرات (sheet4، صفوف 5-17) ── */
+  const initiatives = registry.initiatives || []
+  let x4 = await zip.file('xl/worksheets/sheet4.xml').async('string')
+  x4 = fillSheet(x4, 5, 17, initiatives, [
+    ['B', r => r.name || '', true],
+    ['C', r => r.description || '', true],
+    ['D', r => r.department || '', true],
+    ['E', r => r.startDate ? excelSerial(r.startDate) : null, false],
+    ['F', r => r.dueDate ? excelSerial(r.dueDate) : null, false],
+    ['G', r => pctToFraction(r.completion), false],
+    ['I', r => r.priority || '', true],
+    ['J', r => r.owner || '', true],
+    ['K', r => r.secondaryOwner || '', true],
+    ['L', r => r.comments || '', true],
+  ])
+  zip.file('xl/worksheets/sheet4.xml', x4)
+
+  /* ── التقارير (sheet5، صفوف 5-33) — الحالة يدوية عمود H ── */
+  const reports = registry.reports || []
+  let x5 = await zip.file('xl/worksheets/sheet5.xml').async('string')
+  x5 = fillSheet(x5, 5, 33, reports, [
+    ['B', r => r.name || '', true],
+    ['C', r => r.purpose || '', true],
+    ['D', r => r.frequency || '', true],
+    ['E', r => r.department || '', true],
+    ['F', r => r.startDate ? excelSerial(r.startDate) : null, false],
+    ['G', r => r.dueDate ? excelSerial(r.dueDate) : null, false],
+    ['H', r => r.status || '', true],
+    ['I', r => r.priority || '', true],
+    ['J', r => r.owner || '', true],
+    ['K', r => r.secondaryOwner || '', true],
+    ['L', r => r.comments || '', true],
+  ])
+  zip.file('xl/worksheets/sheet5.xml', x5)
+
+  /* ── الاجتماعات (sheet6، صفوف 6-27) ── */
+  const meetings = registry.meetings || []
+  let x6 = await zip.file('xl/worksheets/sheet6.xml').async('string')
+  x6 = fillSheet(x6, 6, 27, meetings, [
+    ['B', r => r.name || '', true],
+    ['C', r => r.purpose || '', true],
+    ['D', r => r.meetingType || '', true],
+    ['E', r => r.department || '', true],
+    ['F', r => r.frequency || '', true],
+    ['G', r => r.schedule || '', true],
+    ['H', r => r.statusWeek || '', true],
+    ['I', r => r.organizer || '', true],
+    ['J', r => r.comments || '', true],
+  ])
+  zip.file('xl/worksheets/sheet6.xml', x6)
+
   const blob = await zip.generateAsync({
     type: 'blob',
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -133,5 +208,5 @@ export async function exportRased(tasks) {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-  return { exported: rows.length }
+  return { exported: rows.length, registry: initiatives.length + reports.length + meetings.length }
 }

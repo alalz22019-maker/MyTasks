@@ -5,12 +5,14 @@ import {
   subscribeToReportTypes, addReportType, deleteReportType,
 } from '../utils/db'
 import { DEFAULT_REPORT_TYPES, TEAM_MEMBERS, STATUS_OPTIONS } from '../constants'
+import RasedRegistry from './RasedRegistry'
 
-export default function ReportTypesPage() {
+export default function ReportTypesPage({ showToast: parentToast }) {
   const { firebaseUser, userProfile, isAdmin } = useAuth()
   const [reports, setReports] = useState([])
   const [customTypes, setCustomTypes] = useState([])
   const [showForm, setShowForm] = useState(false)
+  const [mainView, setMainView] = useState('issues')
   const [showAddType, setShowAddType] = useState(false)
   const [editingType, setEditingType] = useState(null)
   const [newTypeName, setNewTypeName] = useState('')
@@ -154,6 +156,23 @@ export default function ReportTypesPage() {
   return (
     <div className="page" style={{ paddingBottom: 90 }}>
       <div style={S.container}>
+        {/* مفتاح: إصدارات التقارير | سجل راصد */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+          <button onClick={() => setMainView('issues')} style={{
+            flex: 1, padding: '10px', borderRadius: 12, border: 'none',
+            background: mainView === 'issues' ? 'linear-gradient(135deg, #f59e0b, #f43f5e)' : 'var(--bg3)',
+            color: mainView === 'issues' ? '#fff' : 'var(--text2)',
+            fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+          }}>📋 الإصدارات</button>
+          <button onClick={() => setMainView('registry')} style={{
+            flex: 1, padding: '10px', borderRadius: 12, border: 'none',
+            background: mainView === 'registry' ? 'linear-gradient(135deg, #f59e0b, #f43f5e)' : 'var(--bg3)',
+            color: mainView === 'registry' ? '#fff' : 'var(--text2)',
+            fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+          }}>🗂 سجل راصد</button>
+        </div>
+        {mainView === 'registry' && <RasedRegistry showToast={parentToast || (() => {})} />}
+        {mainView === 'issues' && (<>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ color: 'var(--text)', margin: 0, fontSize: 20 }}>📋 التقارير</h2>
@@ -335,6 +354,7 @@ export default function ReportTypesPage() {
             📊 إجمالي: {reports.length} | مكتمل: {reports.filter(r => r.status === 'completed').length} | متبقي: {reports.filter(r => r.status !== 'completed').length}
           </p>
         </div>
+        </>)}
       </div>
     </div>
   )
