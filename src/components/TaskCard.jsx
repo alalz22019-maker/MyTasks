@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { getEffectiveStatus, getStatusInfo, STATUS_OPTIONS } from '../constants'
 
-const PRIORITY_LABELS = { urgent: 'عاجل', medium: 'متوسطة', low: 'منخفضة' }
+const PRIORITY_LABELS = { urgent: '🔥 عاجل', medium: 'متوسطة', low: 'منخفضة' }
 const RECURRENCE_LABELS = { daily: 'يومي', weekly: 'أسبوعي', biweekly: 'كل أسبوعين', monthly: 'شهري', quarterly: 'ربع سنوي' }
 const TASK_TYPE_ICONS = { task: '', report: '📋', meeting: '🗓' }
 

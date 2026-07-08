@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { analyzeTaskWithAI } from '../utils/claude'
 import { useAuth } from '../contexts/AuthContext'
-import { TEAM_MEMBERS, SOURCE_TYPES, STATUS_OPTIONS, PROJECT_FILES, migrateStatus } from '../constants'
+import { TEAM_MEMBERS, SOURCE_TYPES, STATUS_OPTIONS, PROJECT_FILES, migrateStatus, RASED_DEPARTMENTS } from '../constants'
 
 const PRIORITIES = [
   { value: 'urgent', label: 'عاجل' },
@@ -25,7 +25,7 @@ const TASK_TYPES = [
 
 const DEFAULT_TASK = {
   title: '', priority: 'medium', person: '', dueDate: '', recurrence: '',
-  reminderTime: '', projectName: '', projectNames: [], sourceType: '', sourceTitle: '', done: false,
+  reminderTime: '', projectName: '', projectNames: [], sourceType: '', sourceTitle: '', department: '', done: false,
   taskType: 'task', status: 'not_started', closeNote: '', parentId: '',
 }
 
@@ -265,6 +265,18 @@ export default function TaskForm({ task, onSave, onClose, apiKey, defaultTaskTyp
             <label className="form-label">عنوان المصدر</label>
             <input className="form-input" value={form.sourceTitle} onChange={e => set('sourceTitle', e.target.value)} placeholder="رقم المحضر..." />
           </div>
+        </div>
+
+        {/* القسم (لملف راصد) */}
+        <div className="form-group">
+          <label className="form-label">القسم</label>
+          <select className="form-input" value={form.department || ''} onChange={e => set('department', e.target.value)}>
+            <option value="">— بدون قسم —</option>
+            {form.department && !RASED_DEPARTMENTS.includes(form.department) && (
+              <option value={form.department}>{form.department}</option>
+            )}
+            {RASED_DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
         </div>
 
         {/* المشروع / المبادرة — multi-select */}

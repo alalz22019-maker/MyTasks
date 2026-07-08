@@ -45,7 +45,7 @@ function taskToCells(t) {
   return {
     B: SOURCE_LABEL[t.sourceType] || (t.sourceType || ''),
     C: t.title || '',
-    D: '', // Department — فاضي مؤقتاً بقرار علي
+    D: RASED_DEPT_EXPORT[t.department] || t.department || '', // Department
     E: start,
     F: t.dueDate ? excelSerial(t.dueDate) : null,
     G: completion,
@@ -59,12 +59,13 @@ function taskToCells(t) {
 }
 
 /* استبدال خلية داخل نص صف XML مع الحفاظ على فهرس التنسيق (s) الموجود */
-function setCell(rowXml, col, rowNum, value, isText) {
+function setCell(rowXml, col, rowNum, value, isText, forceStyle) {
   const re = new RegExp(`<c r="${col}${rowNum}"([^>]*?)(?:/>|>[\\s\\S]*?</c>)`)
   const m = rowXml.match(re)
   const attrs = m ? m[1] : ''
   const sMatch = attrs.match(/s="(\d+)"/)
-  const s = sMatch ? ` s="${sMatch[1]}"` : ''
+  const styleIdx = forceStyle !== undefined && forceStyle !== null ? forceStyle : (sMatch ? sMatch[1] : null)
+  const s = styleIdx !== null ? ` s="${styleIdx}"` : ''
   let cell
   if (value === null || value === undefined || value === '') {
     cell = `<c r="${col}${rowNum}"${s}/>`
@@ -80,8 +81,21 @@ function setCell(rowXml, col, rowNum, value, isText) {
   return rowXml.replace('</row>', `${cell}</row>`)
 }
 
+/* التقاط فهرس التنسيق لكل عمود من أول صف بيانات — لتوحيد التنسيق (التواريخ خصوصاً) */
+function captureStyles(xml, firstRow, cols) {
+  const styles = {}
+  const rowMatch = xml.match(new RegExp(`<row r="${firstRow}"[ >][\\s\\S]*?</row>`))
+  if (!rowMatch) return styles
+  for (const col of cols) {
+    const m = rowMatch[0].match(new RegExp(`<c r="${col}${firstRow}"[^>]*?s="(\\d+)"`))
+    if (m) styles[col] = m[1]
+  }
+  return styles
+}
+
 /* تعبئة ورقة عامة: sheetPath، صف البداية والنهاية، وخريطة أعمدة لكل سجل */
 function fillSheet(xml, firstRow, lastRow, records, colMap) {
+  const colStyles = captureStyles(xml, firstRow, colMap.map(c => c[0]))
   for (let r = firstRow; r <= lastRow; r++) {
     const rowRe = new RegExp(`<row r="${r}"[ >][\\s\\S]*?</row>`)
     const rowMatch = xml.match(rowRe)
@@ -90,7 +104,7 @@ function fillSheet(xml, firstRow, lastRow, records, colMap) {
     const rec = records[r - firstRow] || null
     for (const [col, getter, isText] of colMap) {
       const v = rec ? getter(rec) : (isText ? '' : null)
-      rowXml = setCell(rowXml, col, r, v, isText)
+      rowXml = setCell(rowXml, col, r, v, isText, colStyles[col])
     }
     xml = xml.replace(rowRe, rowXml)
   }
@@ -116,6 +130,7 @@ export async function exportRased(tasks, registry = {}) {
     throw new Error(`عدد المهام (${rows.length}) يتجاوز سعة القالب`)
   }
 
+  const taskStyles = captureStyles(xml, FIRST_ROW, ['B', 'C', 'D', 'E', 'F', 'G', 'I', 'J', 'K', 'L', 'M', 'N'])
   for (let r = FIRST_ROW; r <= LAST_ROW; r++) {
     const rowRe = new RegExp(`<row r="${r}"[ >][\\s\\S]*?</row>`)
     const rowMatch = xml.match(rowRe)
@@ -123,18 +138,18 @@ export async function exportRased(tasks, registry = {}) {
     let rowXml = rowMatch[0]
     const data = rows[r - FIRST_ROW] || null
 
-    rowXml = setCell(rowXml, 'B', r, data ? data.B : '', true)
-    rowXml = setCell(rowXml, 'C', r, data ? data.C : '', true)
-    rowXml = setCell(rowXml, 'D', r, data ? data.D : '', true)
-    rowXml = setCell(rowXml, 'E', r, data ? data.E : null, false)
-    rowXml = setCell(rowXml, 'F', r, data ? data.F : null, false)
-    rowXml = setCell(rowXml, 'G', r, data ? data.G : null, false)
-    rowXml = setCell(rowXml, 'I', r, data ? data.I : '', true)
-    rowXml = setCell(rowXml, 'J', r, data ? data.J : '', true)
-    rowXml = setCell(rowXml, 'K', r, data ? data.K : '', true)
-    rowXml = setCell(rowXml, 'L', r, data ? data.L : '', true)
-    rowXml = setCell(rowXml, 'M', r, data ? data.M : '', true)
-    rowXml = setCell(rowXml, 'N', r, data ? data.N : '', true)
+    rowXml = setCell(rowXml, 'B', r, data ? data.B : '', true, taskStyles.B)
+    rowXml = setCell(rowXml, 'C', r, data ? data.C : '', true, taskStyles.C)
+    rowXml = setCell(rowXml, 'D', r, data ? data.D : '', true, taskStyles.D)
+    rowXml = setCell(rowXml, 'E', r, data ? data.E : null, false, taskStyles.E)
+    rowXml = setCell(rowXml, 'F', r, data ? data.F : null, false, taskStyles.F)
+    rowXml = setCell(rowXml, 'G', r, data ? data.G : null, false, taskStyles.G)
+    rowXml = setCell(rowXml, 'I', r, data ? data.I : '', true, taskStyles.I)
+    rowXml = setCell(rowXml, 'J', r, data ? data.J : '', true, taskStyles.J)
+    rowXml = setCell(rowXml, 'K', r, data ? data.K : '', true, taskStyles.K)
+    rowXml = setCell(rowXml, 'L', r, data ? data.L : '', true, taskStyles.L)
+    rowXml = setCell(rowXml, 'M', r, data ? data.M : '', true, taskStyles.M)
+    rowXml = setCell(rowXml, 'N', r, data ? data.N : '', true, taskStyles.N)
 
     xml = xml.replace(rowRe, rowXml)
     if (!data && r > FIRST_ROW + rows.length + 20) break /* ما بعد البيانات القديمة المحتملة — توقف */

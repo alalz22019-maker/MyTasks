@@ -113,6 +113,9 @@ function RegistryForm({ typeKey, item, onClose, showToast }) {
             ) : f.type === 'select' ? (
               <select value={form[f.key] || ''} onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))} style={inputStyle}>
                 <option value="">— اختر —</option>
+                {form[f.key] && !f.options.includes(form[f.key]) && (
+                  <option value={form[f.key]}>{form[f.key]}</option>
+                )}
                 {f.options.map(o => <option key={o} value={o}>{FREQ_AR[o] || o}</option>)}
               </select>
             ) : (

@@ -436,7 +436,7 @@ input, textarea, select {
   letter-spacing: 0.01em;
 }
 
-.badge-urgent { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+.badge-urgent { background: rgba(249,115,22,0.14); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
 .badge-medium { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
 .badge-low    { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.2); }
 .badge-work   { background: rgba(59,130,246,0.15); color: #60a5fa; }

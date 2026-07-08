@@ -899,6 +899,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
         const person = rawOwners[0] || ''
         const secondaryOwner = rawOwners[1] || rawSecondary[0] || ''
         const extraOwners = [...rawOwners.slice(2), ...rawSecondary.slice(1)].filter(x => x !== person && x !== secondaryOwner)
+        const department = clean(row['department'] || row['القسم'])
         const projectName = clean(row['type'] || row['المشروع'])
         let closeNote = clean(row['comments'] || row["what's done"] || row['ملاحظات الإنجاز'])
         if (extraOwners.length > 0) closeNote = `${closeNote}${closeNote ? ' | ' : ''}مشاركة: ${extraOwners.join('، ')}`
@@ -909,7 +910,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
 
         const updateData = {
           done, sourceTitle, sourceType, person, secondaryOwner, projectName, closeNote,
-          dueDate, startDate, priority, rasedPriority, status,
+          dueDate, startDate, priority, rasedPriority, status, department,
         };
 
         const existingTask = tasks.find(t => (t.title || '').trim().toLowerCase() === title.toLowerCase())
