@@ -4,6 +4,7 @@ import TaskCard from '../components/TaskCard'
 import SubtaskInline from '../components/SubtaskInline'
 import TaskForm from '../components/TaskForm'
 import { STATUS_OPTIONS, migrateStatus, TEAM_MEMBERS, PROJECT_FILES } from '../constants'
+import { exportRased } from '../utils/rasedExport'
 import SmartChat from '../components/SmartChat'
 import MeetingMinutesParser from '../components/MeetingMinutesParser'
 import QuickAddMenu from '../components/QuickAddMenu'
@@ -796,7 +797,8 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
       let targetSheetName = workbook.SheetNames.find(n => n.trim() === 'Tasks Tracker')
       
       if (targetSheetName) {
-        targetRows = XLSX.utils.sheet_to_json(workbook.Sheets[targetSheetName], { defval: '' })
+        /* قالب راصد: الرؤوس في الصف 4 */
+        targetRows = XLSX.utils.sheet_to_json(workbook.Sheets[targetSheetName], { defval: '', range: 3 })
       } else {
         for (const name of workbook.SheetNames) {
           const tempRows = XLSX.utils.sheet_to_json(workbook.Sheets[name], { defval: '' })
@@ -822,28 +824,41 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
           }
         }
 
-        const title = (row['task description'] || row['عنوان المهمة'] || '').toString().trim()
+        const clean = (v) => {
+          const x = (v ?? '').toString().trim()
+          return x === 'None' ? '' : x
+        }
+        const title = clean(row['description'] || row['task description'] || row['عنوان المهمة'])
         if (!title) continue
 
-        const completion = row['completion %'] || row['نسبة الإنجاز']
-        const statusRaw = (row['status'] || row['الحالة'] || '').toString().toLowerCase()
-        const done = (typeof completion === 'number' && completion >= 1) ||
-                     (typeof completion === 'string' && completion.includes('100')) ||
-                     (statusRaw === 'completed' || statusRaw === 'مكتملة');
+        /* نسبة الإنجاز → الحالة: 1=مكتملة، 0.5=جاري العمل، 0=لم تبدأ */
+        let compRaw = row['completion %'] ?? row['نسبة الإنجاز'] ?? ''
+        let comp = typeof compRaw === 'number' ? compRaw : parseFloat(String(compRaw).replace('%', ''))
+        if (!isNaN(comp) && comp > 1) comp = comp / 100
+        const done = !isNaN(comp) && comp >= 1
+        const status = done ? 'completed' : (!isNaN(comp) && comp >= 0.5 ? 'in_progress' : 'not_started')
 
-        const sourceTitle = (row['task title'] || row['عنوان المصدر'] || '').toString().trim();
-        const sourceType  = (row['channel'] || row['مصدر المهمة'] || '').toString().trim();
-        const person      = (row['first owner'] || row['owner'] || row['الشخص المسؤول'] || '').toString().trim();
-        const projectName = (row['type'] || row['نوع المهمة'] || row['المشروع'] || '').toString().trim();
-        const closeNote   = (row["what's done"] || row['ملاحظات الإنجاز'] || '').toString().trim();
-        
-        let dueDate = '';
-        if (row['due date']) dueDate = parseExcelDate(row['due date']);
-        else if (row['تاريخ الاستحقاق']) dueDate = parseExcelDate(row['تاريخ الاستحقاق']);
+        /* المصدر العربي → قيم MyDay */
+        const SOURCE_MAP = { 'محضر': 'minutes', 'توجيه مباشر': 'directive', 'إيميل': 'email', 'مهمة روتينية': 'routine' }
+        const sourceType = SOURCE_MAP[clean(row['source'])] || clean(row['channel']) || 'directive'
+        const sourceTitle = clean(row['task title'] || row['عنوان المصدر']) || 'ملف راصد'
 
-        const updateData = { 
-          done, sourceTitle, sourceType, person, projectName, closeNote, dueDate,
-          status: done ? 'done' : 'new',
+        /* الأولوية */
+        const PRI_MAP = { critical: 'urgent', high: 'urgent', medium: 'medium', low: 'low' }
+        const priority = PRI_MAP[clean(row['priority']).toLowerCase()] || 'medium'
+
+        const person = clean(row['task owner'] || row['first owner'] || row['owner'] || row['الشخص المسؤول'])
+        const secondaryOwner = clean(row['secondery owner'] || row['secondary owner'])
+        const projectName = clean(row['type'] || row['المشروع'])
+        const closeNote = clean(row['comments'] || row["what's done"] || row['ملاحظات الإنجاز'])
+
+        let dueDate = '', startDate = ''
+        if (row['due date']) dueDate = parseExcelDate(row['due date'])
+        if (row['start date']) startDate = parseExcelDate(row['start date'])
+
+        const updateData = {
+          done, sourceTitle, sourceType, person, secondaryOwner, projectName, closeNote,
+          dueDate, startDate, priority, status,
         };
 
         const existingTask = tasks.find(t => (t.title || '').trim().toLowerCase() === title.toLowerCase())
@@ -852,9 +867,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
           await dbUpdateTask(existingTask.id, updateData)
           updated++
         } else {
-          await dbAddTask({
-            title, priority: 'medium', ...updateData
-          })
+          await dbAddTask({ title, ...updateData })
           added++
         }
       }
@@ -925,6 +938,19 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
                 display: 'flex', flexDirection: 'column', gap: 4,
               }}>
                 <button onClick={exportExcel} style={menuBtnStyle}><span>📗</span> تنزيل Excel</button>
+                {canWrite && (
+                  <button onClick={async () => {
+                    try {
+                      showToast('⏳ جاري توليد ملف راصد...')
+                      const r = await exportRased(tasks)
+                      showToast(`📊 ملف راصد جاهز — ${r.exported} مهمة`)
+                      setShowExportMenu(false)
+                    } catch (err) {
+                      console.error(err)
+                      showToast('❌ ' + (err?.message || 'فشل توليد ملف راصد'))
+                    }
+                  }} style={menuBtnStyle}><span>📊</span> تصدير راصد</button>
+                )}
                 {isAdmin && <button onClick={exportJSON} style={menuBtnStyle}><span>💾</span> تنزيل JSON</button>}
                 <button onClick={exportCSV} style={menuBtnStyle}><span>📊</span> تنزيل CSV</button>
                 <label style={{ ...menuBtnStyle, cursor: 'pointer' }}>
