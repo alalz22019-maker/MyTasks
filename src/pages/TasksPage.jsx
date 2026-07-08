@@ -889,7 +889,9 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
 
         /* الأولوية */
         const PRI_MAP = { critical: 'urgent', high: 'urgent', medium: 'medium', low: 'low' }
-        const priority = PRI_MAP[clean(row['priority']).toLowerCase()] || 'medium'
+        const rawPri = clean(row['priority'])
+        const priority = PRI_MAP[rawPri.toLowerCase()] || 'medium'
+        const rasedPriority = rawPri.toLowerCase() === 'critical' ? 'Critical' : ''
 
         /* تطبيع المالكين: تفكيك الخانات متعددة الأسماء ومطابقتها بالقائمة الرسمية */
         const rawOwners = extractOwners(clean(row['task owner'] || row['first owner'] || row['owner'] || row['الشخص المسؤول']))
@@ -907,7 +909,7 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
 
         const updateData = {
           done, sourceTitle, sourceType, person, secondaryOwner, projectName, closeNote,
-          dueDate, startDate, priority, status,
+          dueDate, startDate, priority, rasedPriority, status,
         };
 
         const existingTask = tasks.find(t => (t.title || '').trim().toLowerCase() === title.toLowerCase())

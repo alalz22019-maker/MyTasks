@@ -88,12 +88,23 @@ function RegistryForm({ typeKey, item, onClose, showToast }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{
-        background: 'var(--bg)', borderRadius: '18px 18px 0 0', padding: '18px 16px 30px',
-        width: '100%', maxWidth: 560, maxHeight: '85vh', overflowY: 'auto', direction: 'rtl',
+        background: 'var(--bg)', borderRadius: '18px 18px 0 0',
+        width: '100%', maxWidth: 560, maxHeight: '88vh', overflowY: 'auto', direction: 'rtl',
+        WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain',
       }}>
-        <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', marginBottom: 14 }}>
-          {item ? '✏️ تعديل' : '➕ إضافة'}
+        {/* شريط الأزرار الثابت أعلى النموذج — دائماً ظاهر */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)',
+          display: 'flex', alignItems: 'center', gap: 8, padding: '14px 16px 10px',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--text)', flex: 1 }}>
+            {item ? '✏️ تعديل' : '➕ إضافة'}
+          </span>
+          <button onClick={save} style={{ padding: '8px 22px', borderRadius: 10, border: 'none', background: '#10b981', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>حفظ</button>
+          <button onClick={onClose} style={{ padding: '8px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg3)', color: 'var(--text)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
         </div>
+        <div style={{ padding: '12px 16px 140px' }}>
         {fields.map(f => (
           <div key={f.key}>
             <div style={{ fontSize: 11.5, color: 'var(--text2)', marginBottom: 4 }}>{f.label}{f.required ? ' *' : ''}</div>
@@ -109,9 +120,6 @@ function RegistryForm({ typeKey, item, onClose, showToast }) {
             )}
           </div>
         ))}
-        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-          <button onClick={save} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', background: '#10b981', color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>حفظ</button>
-          <button onClick={onClose} style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg3)', color: 'var(--text)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>إلغاء</button>
         </div>
       </div>
     </div>

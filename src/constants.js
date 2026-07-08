@@ -30,7 +30,9 @@ export const COVERAGE_MAP = {
 export const ARCHIVE_CUTOFF = '2026-07-03'
 
 /* قوائم سجل راصد (مطابقة لقوائم القالب المنسدلة) */
-export const RASED_DEPARTMENTS = ['Performance Analyst ', 'Data Analyst ', 'HASTT', 'AI']
+export const RASED_DEPARTMENTS = ['Performance Analyst', 'Data Analyst', 'HASTT', 'AI']
+/* القالب يحمل مسافة زائدة في بعض القيم — نكتبها حرفياً عند التصدير فقط */
+export const RASED_DEPT_EXPORT = { 'Performance Analyst': 'Performance Analyst ', 'Data Analyst': 'Data Analyst ' }
 export const RASED_FREQUENCIES = ['Weekly', 'Monthly', 'Quarterly', 'Annual']
 export const RASED_REPORT_STATUS = ['Not Started', 'In Progress', 'Completed', 'Delayed']
 export const RASED_MEETING_TYPES = ['Clusters', 'Committees', 'Projects', 'Support Services', 'External', 'Others']

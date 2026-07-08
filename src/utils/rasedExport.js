@@ -1,4 +1,4 @@
-import { COVERAGE_MAP } from '../constants'
+import { COVERAGE_MAP, RASED_DEPT_EXPORT } from '../constants'
 
 /**
  * 📊 تصدير راصد — يفتح القالب المحكوم المضمّن (rased-template.xlsx) كأرشيف
@@ -49,7 +49,7 @@ function taskToCells(t) {
     E: start,
     F: t.dueDate ? excelSerial(t.dueDate) : null,
     G: completion,
-    I: PRIORITY_LABEL[t.priority] || 'Medium',
+    I: t.rasedPriority === 'Critical' ? 'Critical' : (PRIORITY_LABEL[t.priority] || 'Medium'),
     J: t.person || '',
     K: t.secondaryOwner || COVERAGE_MAP[(t.person || '').trim()] || '',
     L: 'Yes',
@@ -148,7 +148,7 @@ export async function exportRased(tasks, registry = {}) {
   x4 = fillSheet(x4, 5, 17, initiatives, [
     ['B', r => r.name || '', true],
     ['C', r => r.description || '', true],
-    ['D', r => r.department || '', true],
+    ['D', r => RASED_DEPT_EXPORT[r.department] || r.department || '', true],
     ['E', r => r.startDate ? excelSerial(r.startDate) : null, false],
     ['F', r => r.dueDate ? excelSerial(r.dueDate) : null, false],
     ['G', r => pctToFraction(r.completion), false],
@@ -166,7 +166,7 @@ export async function exportRased(tasks, registry = {}) {
     ['B', r => r.name || '', true],
     ['C', r => r.purpose || '', true],
     ['D', r => r.frequency || '', true],
-    ['E', r => r.department || '', true],
+    ['E', r => RASED_DEPT_EXPORT[r.department] || r.department || '', true],
     ['F', r => r.startDate ? excelSerial(r.startDate) : null, false],
     ['G', r => r.dueDate ? excelSerial(r.dueDate) : null, false],
     ['H', r => r.status || '', true],
@@ -184,7 +184,7 @@ export async function exportRased(tasks, registry = {}) {
     ['B', r => r.name || '', true],
     ['C', r => r.purpose || '', true],
     ['D', r => r.meetingType || '', true],
-    ['E', r => r.department || '', true],
+    ['E', r => RASED_DEPT_EXPORT[r.department] || r.department || '', true],
     ['F', r => r.frequency || '', true],
     ['G', r => r.schedule || '', true],
     ['H', r => r.statusWeek || '', true],

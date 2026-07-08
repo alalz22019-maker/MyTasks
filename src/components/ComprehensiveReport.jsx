@@ -27,9 +27,10 @@ export default function ComprehensiveReport({ tasks = [] }) {
       const keys = keyFn(t)
       keys.forEach(k => {
         if (!k) return
-        if (!map[k]) map[k] = { total: 0, done: 0 }
+        if (!map[k]) map[k] = { total: 0, done: 0, overdue: 0 }
         map[k].total++
         if (t._st === 'completed') map[k].done++
+        if (t._st === 'overdue') map[k].overdue++
       })
     })
     return Object.entries(map).sort((a, b) => b[1].total - a[1].total)
@@ -66,8 +67,11 @@ export default function ComprehensiveReport({ tasks = [] }) {
         const p = v.total ? Math.round((v.done / v.total) * 100) : 0
         return (
           <div key={name}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: D.text }}>{name}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3, gap: 6 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: D.text, display: 'flex', alignItems: 'center', gap: 5 }}>
+                {name}
+                {v.overdue > 0 && <span style={{ background: '#dc262615', border: '1px solid #dc262635', color: '#dc2626', borderRadius: 10, padding: '0 6px', fontSize: 9, fontWeight: 800 }}>🔴 {v.overdue} متأخرة</span>}
+              </span>
               <span style={{ fontSize: 10, color: D.text2, fontWeight: 600 }}>{v.done}/{v.total} — {p}%</span>
             </div>
             <Bar value={p} color={color} />
@@ -100,12 +104,27 @@ export default function ComprehensiveReport({ tasks = [] }) {
     </div>
   )
 
+  /* مستحقة خلال 7 أيام (غير مكتملة) */
+  const now = new Date(); now.setHours(0, 0, 0, 0)
+  const week = new Date(now); week.setDate(week.getDate() + 7)
+  const dueSoon = openList.filter(t => {
+    if (!t.dueDate) return false
+    const d = new Date(t.dueDate)
+    return d >= now && d <= week
+  })
+
   const kpis = [
     { icon: '📋', value: total, label: 'إجمالي المهام', color: 'blue' },
     { icon: '✅', value: doneList.length, label: 'مكتملة', color: 'green' },
-    { icon: '⚙️', value: inProgressList.length, label: 'جاري العمل', color: 'orange' },
+    { icon: '📅', value: dueSoon.length, label: 'مستحقة خلال ٧ أيام', color: 'orange' },
     { icon: '🔴', value: overdueList.length, label: 'متأخرة', color: 'red' },
   ]
+
+  /* أيام التأخر */
+  const daysLate = (t) => {
+    if (!t.dueDate) return 0
+    return Math.max(0, Math.round((now - new Date(t.dueDate)) / 86400000))
+  }
 
   return (
     <div style={{ padding: '0 16px 32px', direction: 'rtl' }}>
@@ -159,11 +178,13 @@ export default function ComprehensiveReport({ tasks = [] }) {
             </div>
           </Section>
 
-          {/* حسب الملف */}
-          <Section>
-            <SectionTitle icon="📁" text="حالة الملفات" count={byProject.length} color="#6366f1" />
-            <GroupRows data={byProject} color="#6366f1" />
-          </Section>
+          {/* حسب الملف — يُخفى إذا لم تُصنَّف المهام بملفات بعد */}
+          {byProject.some(([name]) => name !== 'بدون ملف') && (
+            <Section>
+              <SectionTitle icon="📁" text="حالة الملفات" count={byProject.length} color="#6366f1" />
+              <GroupRows data={byProject.filter(([name]) => name !== 'بدون ملف' || byProject.length === 1)} color="#6366f1" />
+            </Section>
+          )}
 
           {/* حسب المسؤول */}
           <Section>
@@ -175,7 +196,9 @@ export default function ComprehensiveReport({ tasks = [] }) {
           {overdueList.length > 0 && (
             <Section>
               <SectionTitle icon="⚠️" text="المهام المتأخرة" count={overdueList.length} color="#dc2626" />
-              {overdueList.map(t => <TaskRow key={t.id} t={t} accent="#dc2626" />)}
+              {overdueList
+                .sort((a, b) => daysLate(b) - daysLate(a))
+                .map(t => <TaskRow key={t.id} t={{ ...t, title: `${t.title} (متأخرة ${daysLate(t)} يوم)` }} accent="#dc2626" />)}
             </Section>
           )}
 
