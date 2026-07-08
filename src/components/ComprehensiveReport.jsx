@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { D, KPI_PALETTE, CARD, formatDates } from './VisualSummaryColors'
 import { exportPNG, exportPDF, shareImage } from './VisualSummaryExport'
 import { getEffectiveStatus } from '../constants'
+import { getRegistryAll } from '../utils/db'
 
 /**
  * 🧾 التقرير الشامل — محسوب مباشرة من بيانات المهام (بدون ذكاء اصطناعي)
@@ -10,6 +11,14 @@ import { getEffectiveStatus } from '../constants'
 export default function ComprehensiveReport({ tasks = [] }) {
   const cardRef = useRef(null)
   const [exporting, setExporting] = useState(false)
+  const [registry, setRegistry] = useState({ initiatives: [], reports: [], meetings: [] })
+  useEffect(() => {
+    Promise.all([
+      getRegistryAll('rased_initiatives'),
+      getRegistryAll('rased_reports'),
+      getRegistryAll('rased_meetings'),
+    ]).then(([initiatives, reports, meetings]) => setRegistry({ initiatives, reports, meetings })).catch(() => {})
+  }, [])
   const { hijri, gregorianEn } = formatDates()
 
   /* ── الحسابات ── */
@@ -113,6 +122,33 @@ export default function ComprehensiveReport({ tasks = [] }) {
     return d >= now && d <= week
   })
 
+  /* ── حالة سجل راصد ── */
+  const initStatus = (i) => {
+    const c = Number(i.completion) || 0
+    if (c >= 100) return { label: 'مكتملة', color: '#059669' }
+    if (i.dueDate && new Date(i.dueDate) < now) return { label: `⏰ متأخرة`, color: '#dc2626' }
+    if (c > 0) return { label: 'جارية', color: '#2563eb' }
+    return { label: 'لم تبدأ', color: '#6b7280' }
+  }
+  const REPORT_ST = {
+    'Completed': { label: 'مكتمل', color: '#059669' },
+    'In Progress': { label: 'جاري', color: '#2563eb' },
+    'Delayed': { label: '⏰ متأخر', color: '#dc2626' },
+    'Not Started': { label: 'لم يبدأ', color: '#6b7280' },
+  }
+  const StChip = ({ st }) => (
+    <span style={{ background: `${st.color}14`, border: `1px solid ${st.color}30`, color: st.color, borderRadius: 20, padding: '1px 9px', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' }}>{st.label}</span>
+  )
+  const RegRow = ({ name, chip, extra }) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px dashed #e9ecef' }}>
+      <div style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: D.text, lineHeight: 1.5 }}>{name}
+        {extra && <div style={{ fontSize: 10, color: D.text2, fontWeight: 400, marginTop: 1 }}>{extra}</div>}
+      </div>
+      {chip}
+    </div>
+  )
+  const meetDone = registry.meetings.filter(m => m.statusWeek === 'Done').length
+
   const kpis = [
     { icon: '📋', value: total, label: 'إجمالي المهام', color: 'blue' },
     { icon: '✅', value: doneList.length, label: 'مكتملة', color: 'green' },
@@ -178,6 +214,64 @@ export default function ComprehensiveReport({ tasks = [] }) {
             </div>
           </Section>
 
+          {/* 🚀 المبادرات */}
+          {registry.initiatives.length > 0 && (
+            <Section>
+              <SectionTitle icon="🚀" text="المبادرات" count={registry.initiatives.length} color="#7c3aed" />
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {registry.initiatives.map(i => {
+                  const c = Number(i.completion) || 0
+                  return (
+                    <div key={i.id} style={{ padding: '7px 0', borderBottom: '1px dashed #e9ecef' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: D.text, lineHeight: 1.5 }}>{i.name}</span>
+                        <StChip st={initStatus(i)} />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Bar value={c} color="#7c3aed" />
+                        <span style={{ fontSize: 10, fontWeight: 800, color: '#7c3aed' }}>{c}%</span>
+                        {i.owner && <span style={{ fontSize: 9.5, color: D.text2 }}>👤 {i.owner}</span>}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </Section>
+          )}
+
+          {/* 📄 التقارير الدورية */}
+          {registry.reports.length > 0 && (
+            <Section>
+              <SectionTitle icon="📄" text="التقارير الدورية" count={registry.reports.length} color="#0891b2" />
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+                {Object.entries(REPORT_ST).map(([k, st]) => {
+                  const n = registry.reports.filter(r => r.status === k).length
+                  return n > 0 ? <StChip key={k} st={{ ...st, label: `${st.label}: ${n}` }} /> : null
+                })}
+              </div>
+              {registry.reports.map(r => (
+                <RegRow key={r.id} name={r.name}
+                  extra={[r.frequency && `🔁 ${r.frequency}`, r.owner && `👤 ${r.owner}`].filter(Boolean).join('  •  ')}
+                  chip={<StChip st={REPORT_ST[r.status] || REPORT_ST['Not Started']} />} />
+              ))}
+            </Section>
+          )}
+
+          {/* 🤝 الاجتماعات */}
+          {registry.meetings.length > 0 && (
+            <Section>
+              <SectionTitle icon="🤝" text="الاجتماعات" count={registry.meetings.length} color="#d97706" />
+              <div style={{ fontSize: 10.5, color: D.text2, fontWeight: 700, marginBottom: 8 }}>
+                انعقد هذا الأسبوع: {meetDone} من {registry.meetings.length}
+              </div>
+              {registry.meetings.map(m => (
+                <RegRow key={m.id} name={m.name}
+                  extra={[m.schedule && `🕐 ${m.schedule}`, m.organizer && `👤 ${m.organizer}`].filter(Boolean).join('  •  ')}
+                  chip={<StChip st={m.statusWeek === 'Done' ? { label: 'انعقد ✓', color: '#059669' } : { label: 'لم ينعقد', color: '#d97706' }} />} />
+              ))}
+            </Section>
+          )}
+
           {/* حسب الملف — يُخفى إذا لم تُصنَّف المهام بملفات بعد */}
           {byProject.some(([name]) => name !== 'بدون ملف') && (
             <Section>
@@ -218,10 +312,6 @@ export default function ComprehensiveReport({ tasks = [] }) {
             {doneList.length === 0 && <div style={{ fontSize: 11, color: D.text2 }}>لا توجد مهام مكتملة بعد</div>}
           </Section>
 
-          {/* التذييل */}
-          <div style={{ textAlign: 'center', fontSize: 9.5, color: D.text2, paddingTop: 2 }}>
-            تقرير محسوب آلياً من بيانات المهام • My Day — الأداء والتحليلات P&A
-          </div>
         </div>
       </div>
     </div>
