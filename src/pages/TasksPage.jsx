@@ -784,6 +784,51 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
     return ''
   }
 
+  /* ── تطبيع الأسماء المستوردة إلى القائمة الرسمية ── */
+  function stripName(n) {
+    return (n || '')
+      .replace(/^(م\.|أ\.|د\.)\s*/g, '')
+      .replace(/[ءأإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي')
+      .replace(/\s+/g, ' ').trim()
+  }
+  function bestRosterMatch(cand) {
+    const c = stripName(cand)
+    if (!c) return null
+    for (const m of TEAM_MEMBERS) {
+      if (stripName(m) === c) return m
+    }
+    /* مطابقة جزئية: كل كلمات المرشح موجودة في اسم العضو */
+    const candTokens = c.split(' ')
+    let best = null, bestScore = 0
+    for (const m of TEAM_MEMBERS) {
+      const mTokens = stripName(m).split(' ')
+      const score = candTokens.filter(t => mTokens.some(mt => mt === t || mt.startsWith(t) || t.startsWith(mt))).length
+      if (score === candTokens.length && score > bestScore) { best = m; bestScore = score }
+    }
+    return best
+  }
+  function extractOwners(raw) {
+    const cleaned = (raw || '').replace(/[،,\n]/g, ' ').replace(/\s+/g, ' ').trim()
+    if (!cleaned || cleaned === 'None') return []
+    /* جرّب الخانة كاملة أولاً (اسم واحد سليم) */
+    const whole = bestRosterMatch(cleaned)
+    if (whole) return [whole]
+    /* فكّك: طابق أزواج الكلمات ثم المفردة */
+    const tokens = cleaned.split(' ').filter(t => !/^(م|أ|د)\.?$/.test(t))
+    const found = []
+    let i = 0
+    while (i < tokens.length) {
+      let matched = null, used = 1
+      for (const len of [2, 1]) {
+        const hit = bestRosterMatch(tokens.slice(i, i + len).join(' '))
+        if (hit) { matched = hit; used = len; break }
+      }
+      if (matched && !found.includes(matched)) found.push(matched)
+      i += used
+    }
+    return found
+  }
+
   async function handleImportExcel(e) {
     const file = e.target.files[0]
     if (!file) return
@@ -847,10 +892,15 @@ export default function TasksPage({ tasks, apiKey, setApiKey, showToast, userPro
         const PRI_MAP = { critical: 'urgent', high: 'urgent', medium: 'medium', low: 'low' }
         const priority = PRI_MAP[clean(row['priority']).toLowerCase()] || 'medium'
 
-        const person = clean(row['task owner'] || row['first owner'] || row['owner'] || row['الشخص المسؤول'])
-        const secondaryOwner = clean(row['secondery owner'] || row['secondary owner'])
+        /* تطبيع المالكين: تفكيك الخانات متعددة الأسماء ومطابقتها بالقائمة الرسمية */
+        const rawOwners = extractOwners(clean(row['task owner'] || row['first owner'] || row['owner'] || row['الشخص المسؤول']))
+        const rawSecondary = extractOwners(clean(row['secondery owner'] || row['secondary owner']))
+        const person = rawOwners[0] || ''
+        const secondaryOwner = rawOwners[1] || rawSecondary[0] || ''
+        const extraOwners = [...rawOwners.slice(2), ...rawSecondary.slice(1)].filter(x => x !== person && x !== secondaryOwner)
         const projectName = clean(row['type'] || row['المشروع'])
-        const closeNote = clean(row['comments'] || row["what's done"] || row['ملاحظات الإنجاز'])
+        let closeNote = clean(row['comments'] || row["what's done"] || row['ملاحظات الإنجاز'])
+        if (extraOwners.length > 0) closeNote = `${closeNote}${closeNote ? ' | ' : ''}مشاركة: ${extraOwners.join('، ')}`
 
         let dueDate = '', startDate = ''
         if (row['due date']) dueDate = parseExcelDate(row['due date'])
