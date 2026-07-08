@@ -149,6 +149,23 @@ export default function ComprehensiveReport({ tasks = [] }) {
   )
   const meetDone = registry.meetings.filter(m => m.statusWeek === 'Done').length
 
+  /* الجارية والقادمة: المفتوحة غير المتأخرة — بلا تكرار مع قسم المتأخرة */
+  const pendingList = openList
+    .filter(t => t._st !== 'overdue')
+    .sort((a, b) => {
+      if (!a.dueDate && !b.dueDate) return 0
+      if (!a.dueDate) return 1
+      if (!b.dueDate) return -1
+      return new Date(a.dueDate) - new Date(b.dueDate)
+    })
+  const dueIn = (t) => {
+    if (!t.dueDate) return ''
+    const diff = Math.round((new Date(t.dueDate) - now) / 86400000)
+    if (diff === 0) return ' (مستحقة اليوم)'
+    if (diff === 1) return ' (غداً)'
+    return ` (خلال ${diff} يوم)`
+  }
+
   const kpis = [
     { icon: '📋', value: total, label: 'إجمالي المهام', color: 'blue' },
     { icon: '✅', value: doneList.length, label: 'مكتملة', color: 'green' },
@@ -296,12 +313,12 @@ export default function ComprehensiveReport({ tasks = [] }) {
             </Section>
           )}
 
-          {/* المفتوحة */}
+          {/* الجارية والقادمة — بدون تكرار المتأخرة */}
           <Section>
-            <SectionTitle icon="📌" text="المهام المفتوحة" count={openList.length} color="#d97706" />
-            {openList.slice(0, 40).map(t => <TaskRow key={t.id} t={t} />)}
-            {openList.length > 40 && <div style={{ fontSize: 10, color: D.text2, marginTop: 6 }}>+ {openList.length - 40} مهمة أخرى</div>}
-            {openList.length === 0 && <div style={{ fontSize: 11, color: D.text2 }}>لا توجد مهام مفتوحة 🎉</div>}
+            <SectionTitle icon="📌" text="المهام الجارية والقادمة" count={pendingList.length} color="#d97706" />
+            {pendingList.slice(0, 40).map(t => <TaskRow key={t.id} t={{ ...t, title: `${t.title}${dueIn(t)}` }} />)}
+            {pendingList.length > 40 && <div style={{ fontSize: 10, color: D.text2, marginTop: 6 }}>+ {pendingList.length - 40} مهمة أخرى</div>}
+            {pendingList.length === 0 && <div style={{ fontSize: 11, color: D.text2 }}>لا توجد مهام قادمة — كل المفتوح متأخر أو منجز</div>}
           </Section>
 
           {/* المكتملة */}
